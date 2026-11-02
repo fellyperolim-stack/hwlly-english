@@ -96,6 +96,10 @@ nav button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-co
 .primary:disabled{opacity:.5;cursor:default}
 .ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:.6rem 1rem}
 [hidden]{display:none!important}
+#tabs .grp,#tabs .sub-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:.5rem 0}
+#tabs .sub-tabs{margin-top:0;padding-bottom:.25rem}
+#tabs .grp button{font-weight:700}
+#tabs .sub-tabs button{font-size:.9rem;padding:.35rem .75rem}
 #gate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg);z-index:10}
 body.locked #gate{display:flex}
 body.locked .wrap{display:none}
@@ -271,13 +275,34 @@ function renderWave(){
   $("stDone").textContent=Object.values(state.done).filter(Boolean).length;
 }
 
+// Navegação agrupada: primeiro nível (Plano, Ditado, Novidades) e, dentro de Plano, as semanas.
+const GROUPS=[{id:"plano",label:"📅 Plano",first:0},{id:"ditado",label:"🎧 Ditado",first:5},{id:"novidades",label:"🔎 Novidades",href:"novidades.html"}];
+const PLANO_ITEMS=["Semana 1","Semana 2","Semana 3","Semana 4","Final"];
+
 function renderTabs(){
   const t=$("tabs"); t.innerHTML="";
-  ["Semana 1","Semana 2","Semana 3","Semana 4","Final","🎧 Ditado"].forEach((l,i)=>{
-    const b=document.createElement("button"); b.textContent=l; b.setAttribute("role","tab");
-    b.setAttribute("aria-selected",i===curWeek); b.onclick=()=>{curWeek=i; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
-    t.appendChild(b);
+  const top=document.createElement("div"); top.className="grp";
+  const inPlano=curWeek<5, inDitado=curWeek===5;
+  GROUPS.forEach(g=>{
+    const b=document.createElement("button"); b.textContent=g.label; b.setAttribute("role","tab");
+    if(g.href){ b.onclick=()=>{location.href=g.href;}; }
+    else {
+      const active=(g.id==="plano"&&inPlano)||(g.id==="ditado"&&inDitado);
+      b.setAttribute("aria-selected",active);
+      b.onclick=()=>{curWeek=g.first; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
+    }
+    top.appendChild(b);
   });
+  t.appendChild(top);
+  if(inPlano){
+    const sub=document.createElement("div"); sub.className="sub-tabs";
+    PLANO_ITEMS.forEach((l,i)=>{
+      const b=document.createElement("button"); b.textContent=l; b.setAttribute("role","tab");
+      b.setAttribute("aria-selected",i===curWeek); b.onclick=()=>{curWeek=i; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
+      sub.appendChild(b);
+    });
+    t.appendChild(sub);
+  }
 }
 
 const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
