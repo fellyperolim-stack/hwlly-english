@@ -516,6 +516,15 @@ body,.app,.content{background-color:transparent}
 .side-user .who{margin:0;flex-basis:auto}
 .side-user #authBtn{margin-top:0;width:100%;border-radius:14px;min-height:44px;font-weight:800}
 .side-user #authBtn:hover{border-color:var(--danger)}
+
+/* ===== Missão clicável ===== */
+.mrow{padding:.2rem 0}
+.mgo{display:flex;align-items:center;gap:.9rem;flex:1;min-width:0;text-align:left;background:transparent;border:0;color:inherit;padding:.45rem .5rem;margin:0 -.5rem;border-radius:14px;cursor:pointer}
+.mgo:hover{background:var(--surface-2)}
+.mgo:active{transform:translateY(1px)}
+.mgo .mmid{flex:1}
+.mchev{font-size:1.6rem;line-height:1;color:var(--muted);flex:none;transition:transform .15s}
+.mgo:hover .mchev{transform:translateX(3px);color:var(--teal)}
 </style>
 </head>
 <body class="locked">
@@ -1439,22 +1448,22 @@ function weekXp(){let x=0; for(let i=0;i<7;i++) x+=((state.xpLog||{})[DAY()-i]||
 const WDN=["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
 function missionsToday(){
   const wd=new Date().getDay(), ti=todayIndex(), cur=currentDayIdx(), list=[];
-  list.push({id:"xp",icon:"⚡",t:`Ganhe ${GOAL_XP} XP`,goal:GOAL_XP,val:()=>todayXp(),gems:10});
+  list.push({id:"xp",icon:"⚡",t:`Ganhe ${GOAL_XP} XP`,goal:GOAL_XP,val:()=>todayXp(),gems:10,to:()=>go(14)});
   if(ti>=0&&ti<DAYS.length){
     const d=DAYS[ti];
-    list.push({id:"plano",icon:"📅",t:`Conclua a lição de hoje (Dia ${d.n})`,goal:d.tasks.length,val:()=>planTasksToday(),gems:15});
-    if(cur<ti&&DAYS[cur]){ const dc=DAYS[cur]; list.push({id:"atraso",icon:"⏪",t:`Recupere o Dia ${dc.n} que ficou para trás`,goal:dc.tasks.length,val:()=>dc.tasks.filter((_,k)=>state.done[key(dc.n,k)]).length,gems:10}); }
+    list.push({id:"plano",icon:"📅",t:`Conclua a lição de hoje (Dia ${d.n})`,goal:d.tasks.length,val:()=>planTasksToday(),gems:15,to:()=>openDay(d.week,d.n)});
+    if(cur<ti&&DAYS[cur]){ const dc=DAYS[cur]; list.push({id:"atraso",icon:"⏪",t:`Recupere o Dia ${dc.n} que ficou para trás`,goal:dc.tasks.length,val:()=>dc.tasks.filter((_,k)=>state.done[key(dc.n,k)]).length,gems:10,to:()=>openDay(dc.week,dc.n)}); }
   } else if(ti>=DAYS.length){
-    list.push({id:"fim",icon:"🏁",t:"Plano concluído: revise as 3 histórias que mais gostou",goal:3,val:()=>dayLog().story,gems:10});
+    list.push({id:"fim",icon:"🏁",t:"Plano concluído: revise as 3 histórias que mais gostou",goal:3,val:()=>dayLog().story,gems:10,to:()=>go(10)});
   } else {
-    list.push({id:"inicio",icon:"🗓️",t:"O plano ainda não começou: faça uma história",goal:2,val:()=>dayLog().story,gems:10});
+    list.push({id:"inicio",icon:"🗓️",t:"O plano ainda não começou: faça uma história",goal:2,val:()=>dayLog().story,gems:10,to:()=>go(10)});
   }
-  list.push({id:"cards",icon:"🃏",t:"Revise 10 cards",goal:10,val:()=>dayLog().reviews,gems:5});
+  list.push({id:"cards",icon:"🃏",t:"Revise 10 cards",goal:10,val:()=>dayLog().reviews,gems:5,to:()=>openCards("vocab")});
   const rot=[
-    {id:"audio",icon:"🎧",t:"Complete uma sessão de áudio",goal:1,val:()=>dayLog().audio,gems:5},
-    {id:"quiz",icon:"🧩",t:"Acerte 5 perguntas no quiz",goal:5,val:()=>dayLog().quiz,gems:5},
-    {id:"fala",icon:"🎤",t:"Fale 3 frases com 80% ou mais",goal:3,val:()=>dayLog().fala,gems:5},
-    {id:"story",icon:"📖",t:"Leia uma história e acerte 2 perguntas",goal:2,val:()=>dayLog().story,gems:10}
+    {id:"audio",icon:"🎧",t:"Complete uma sessão de áudio",goal:1,val:()=>dayLog().audio,gems:5,to:()=>go(9)},
+    {id:"quiz",icon:"🧩",t:"Acerte 5 perguntas no quiz",goal:5,val:()=>dayLog().quiz,gems:5,to:()=>go(7)},
+    {id:"fala",icon:"🎤",t:"Fale 3 frases com 80% ou mais",goal:3,val:()=>dayLog().fala,gems:5,to:()=>go(8)},
+    {id:"story",icon:"📖",t:"Leia uma história e acerte 2 perguntas",goal:2,val:()=>dayLog().story,gems:10,to:()=>{sty={i:storyOfDay(),ans:{},lvl:"Todos"}; go(10);}}
   ];
   list.push(rot[wd%rot.length],rot[(wd+2)%rot.length]);
   return list;
@@ -1468,11 +1477,15 @@ function claim(ms){
 function missionRow(ms,compact){
   const v=Math.min(ms.val(),ms.goal), done=ms.val()>=ms.goal, got=claimed(ms.id);
   const r=el("div","mrow"+(compact?" compact":""));
-  r.append(el("span","mi",ms.icon));
   const mid=el("div","mmid"); mid.append(el("b",null,ms.t));
   const bar=el("div","bar"); const f=el("div","fill"); f.style.width=Math.round(v/ms.goal*100)+"%"; bar.appendChild(f); mid.appendChild(bar);
   mid.append(el("span","dzmeta",`${v} / ${ms.goal}`));
-  r.appendChild(mid);
+  // A missão é um botão: toque para ir direto à atividade.
+  const gobtn=el("button","mgo"); gobtn.type="button"; gobtn.title="Ir para a missão";
+  gobtn.onclick=()=>{ if(ms.to) ms.to(); };
+  gobtn.append(el("span","mi",ms.icon),mid);
+  const chev=el("span","mchev","›"); chev.setAttribute("aria-hidden","true"); gobtn.appendChild(chev);
+  r.appendChild(gobtn);
   if(got) r.appendChild(el("span","gemtag ok","✓ +"+ms.gems+" 💎"));
   else if(done) r.appendChild(btn("btn3d sm","Resgatar +"+ms.gems+" 💎",()=>claim(ms)));
   else r.appendChild(el("span","gemtag","+"+ms.gems+" 💎"));
