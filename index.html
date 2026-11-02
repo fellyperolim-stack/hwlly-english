@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FF5A36">
+<meta name="theme-color" content="#FF6B4A">
+<meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -458,6 +459,22 @@ main#main{min-width:0}
   .bb[aria-current="page"]{color:var(--teal);background:var(--teal-soft)}
   .hub{grid-template-columns:1fr}
 }
+
+/* ===== Ajustes v5: filtros, cards de palavras, tarefas com botões, fundo sem branco ===== */
+html{background:var(--bg);color-scheme:dark}
+@media (prefers-color-scheme: light){html:not([data-theme="dark"]){color-scheme:light}}
+:root[data-theme="light"]{color-scheme:light}
+.bar2{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 .9rem}
+.chip{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:.45rem 1rem;min-height:44px;font-weight:800;font-size:.9rem}
+.bar2 .chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.cardfront.big{font-size:clamp(2rem,6vw,3.2rem)}
+button.vid{font:inherit;cursor:pointer}
+.vids{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+.vid{background:var(--teal-soft);color:var(--teal);border:0;border-radius:999px;padding:.35rem .8rem;font-size:.85rem;font-weight:800;text-decoration:none}
+.readx{margin-top:.6rem;font-size:.9rem;color:var(--muted)}
+.readx .vid.read{background:var(--amber-soft);color:var(--amber)}
+body,.app,.content{background-color:transparent}
+.opt,.chip,select{color:var(--ink)}
 </style>
 </head>
 <body class="locked">
@@ -483,13 +500,13 @@ main#main{min-width:0}
       </svg>
       <h1>HWLLY <span class="bar">|</span> ENGLISH</h1>
     </div>
-    <p class="kicker">Listening em 30 dias</p>
+    <p class="kicker">Listening em 6 meses</p>
   </header>
   <nav id="tabs" aria-label="Menu principal"></nav>
   <div class="side-foot">
     <div class="wave" id="wave" aria-label="Progresso diário"></div>
     <div class="stats">
-      <span><strong id="stDone">0</strong> de 90 tarefas feitas</span>
+      <span><strong id="stDone">0</strong> de 540 tarefas feitas</span>
       <span id="sync">Carregando…</span>
       <div id="who" class="who" hidden></div>
       <button id="authBtn" class="ghost" hidden>Entrar com Google</button>
@@ -510,12 +527,13 @@ main#main{min-width:0}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="data/deck.js"></script>
+<script src="data/stories.js"></script>
 <script>
 const START = new Date(2026, 9, 5); // ajustado: Dia 14 = 18/out
 const WD = ["dom","seg","ter","qua","qui","sex","sáb"];
 const T = (l, x) => ({l, x});
 const WEEKS = [
- {title:"Semana 1: base e connected speech", goal:"Entender por que você não reconhece palavras que já conhece. Áudios claros, sotaque padrão.", days:[
+ {title:"Semana 1: Base e Connected Speech", goal:"Descubra por que você não reconhece palavras que já conhece: na fala, os sons se ligam e mudam. Áudios claros, sotaque padrão.", days:[
   {tasks:[T("Teste inicial (10 min)","Vídeo de 5 min do All Ears English, sem legenda. Anote quanto entendeu (em %)."),T("Técnica (10 min)","Rachel's English sobre linking. Anote 5 exemplos."),T("Extensivo (10 min)","BBC Learning English, um episódio do 6 Minute English, sem pausar.")]},
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min do 6 Minute English de ontem, frase por frase."),T("Técnica (10 min)","Weak forms (to, for, of, and, can, a). Escreva 5 frases e leia com as formas fracas."),T("Extensivo (10 min)","Novo episódio do 6 Minute English.")]},
   {tasks:[T("Intensivo (10 min)","Ciclo de 4 escutas em 2 min de um vídeo do English with Lucy."),T("Técnica (10 min)","Shadowing do mesmo trecho, 3 vezes."),T("Extensivo (10 min)","Easy English, um vídeo com legenda em inglês.")]},
@@ -524,7 +542,7 @@ const WEEKS = [
   {tasks:[T("Intensivo (10 min)","Ciclo de 4 escutas em 2 min do All Ears English."),T("Técnica (10 min)","Elisão: \"next day\" vira \"nex day\". Vídeo do Rachel's English."),T("Extensivo (10 min)","All Ears English, 10 min de um episódio.")]},
   {test:true,tasks:[T("Mini-teste (15 min)","Vídeo novo do All Ears English, 3 min, sem legenda. Resumo de 5 linhas, depois confira."),T("Shadowing (10 min)","Trecho de 1 min do mesmo vídeo."),T("Revisão rápida (5 min)","Veja o que marcou na semana e refaça a tarefa que foi mais difícil.")]}
  ]},
- {title:"Semana 2: reduções e phrasal verbs", goal:"Reconhecer as reduções mais comuns. 3 phrasal verbs por dia, sempre tirados do áudio.", days:[
+ {title:"Semana 2: Reduções e Phrasal Verbs", goal:"Reconheça as reduções mais comuns da fala natural e aprenda 3 phrasal verbs por dia, sempre tirados do áudio.", days:[
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min do Luke's English Podcast."),T("Técnica (10 min)","Reduções: gonna, wanna, gotta, hafta, kinda, lemme, dunno, gimme. Uma frase com cada."),T("Extensivo (10 min)","Continue o episódio do Luke's English Podcast.")]},
   {tasks:[T("Intensivo (10 min)","Ciclo de 4 escutas em 2 min do All Ears English. Anote 3 phrasal verbs."),T("Técnica (10 min)","Whatcha, didja, wouldja, gotcha. Shadowing de 5 frases."),T("Extensivo (10 min)","Speak English with Vanessa, um vídeo.")]},
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min do Easy English."),T("Técnica (10 min)","Modais no passado: must've, might've, can't've. Escreva 5 frases."),T("Extensivo (10 min)","Friends ou Modern Family com legenda em inglês.")]},
@@ -533,7 +551,7 @@ const WEEKS = [
   {tasks:[T("Intensivo (10 min)","Ciclo de 4 escutas em 2 min de um TED Talk."),T("Técnica (10 min)","Condicionais mistas. Escreva 3 sobre sua vida."),T("Extensivo (10 min)","Termine o TED Talk.")]},
   {test:true,tasks:[T("Mini-teste (15 min)","Luke's English Podcast, 3 min, sem legenda. Resumo de 5 linhas e confira."),T("Ditado-relâmpago (10 min)","30 s de uma cena de série. Compare com o Dia 2."),T("Revisão rápida (5 min)","Veja o que marcou na semana e refaça a tarefa que foi mais difícil.")]}
  ]},
- {title:"Semana 3: conversas naturais e shadowing", goal:"Acompanhar duas ou mais pessoas falando, com interrupções e humor. Shadowing diário.", days:[
+ {title:"Semana 3: Conversas Naturais e Shadowing", goal:"Acompanhe duas ou mais pessoas conversando, com interrupções e humor. Shadowing todos os dias.", days:[
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min de uma conversa do All Ears English."),T("Técnica (10 min)","Shadowing fazendo o papel de um dos apresentadores."),T("Extensivo (10 min)","The Office (US), um episódio com legenda em inglês.")]},
   {tasks:[T("Intensivo (10 min)","Ciclo de 4 escutas em uma cena de 2 min de The Office."),T("Técnica (10 min)","Flap T americano: water → \"wader\". Shadowing de 5 frases."),T("Extensivo (10 min)","Continue The Office.")]},
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min de um trecho do Graham Norton Show."),T("Técnica (10 min)","I mean, you know, like, sort of, the thing is, to be fair."),T("Extensivo (10 min)","Mais um trecho do Graham Norton.")]},
@@ -542,7 +560,7 @@ const WEEKS = [
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min do Kurzgesagt ou Vox."),T("Técnica (10 min)","Inversão: Never have I…, Not only did she… Escreva 3 frases."),T("Extensivo (10 min)","Termine o vídeo.")]},
   {test:true,tasks:[T("Mini-teste (15 min)","Cena nova de 3 min de uma série, sem legenda. Resumo e confira."),T("Shadowing (10 min)","1 min do mesmo trecho."),T("Revisão rápida (5 min)","Veja o que marcou na semana e refaça a tarefa que foi mais difícil.")]}
  ]},
- {title:"Semana 4: conteúdo nativo e sotaques", goal:"Sotaques diferentes e conteúdo longo feito para nativos, com menos legenda.", days:[
+ {title:"Semana 4: Conteúdo Nativo e Sotaques", goal:"Ouça sotaques diferentes e conteúdos longos feitos para nativos, usando cada vez menos legenda.", days:[
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min com sotaque australiano (entrevista ou Bluey)."),T("Técnica (10 min)","Britânico x americano x australiano: vogais e o \"r\". 5 diferenças."),T("Extensivo (10 min)","Ted Lasso, com legenda em inglês.")]},
   {tasks:[T("Intensivo (10 min)","Ciclo de 4 escutas em uma cena de 2 min de Ted Lasso."),T("Técnica (10 min)","Gírias britânicas da cena (mate, gutted, knackered, cheers)."),T("Extensivo (10 min)","Continue Ted Lasso.")]},
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min do Huberman Lab ou Lex Fridman."),T("Técnica (10 min)","Cleft sentences: What I need is…, It was John who… 3 frases."),T("Extensivo (10 min)","Continue o episódio, sem legenda.")]},
@@ -551,11 +569,70 @@ const WEEKS = [
   {tasks:[T("Intensivo (10 min)","Ditado de 1 min do Conan O'Brien Needs a Friend."),T("Técnica (10 min)","Participle clauses: Having finished…, Not knowing… 3 frases."),T("Extensivo (10 min)","Continue o episódio.")]},
   {test:true,tasks:[T("Mini-teste (15 min)","3 min de um podcast nativo novo, sem legenda. Resumo e confira."),T("Shadowing (10 min)","1 min do mesmo trecho."),T("Revisão rápida (5 min)","Veja o que marcou na semana e refaça a tarefa que foi mais difícil.")]}
  ]},
- {title:"Dias 29 e 30: teste final", goal:"Medir a evolução contra o Dia 1 e preparar o mês 2.", days:[
+ {title:"Dias 29 e 30: Teste Final", goal:"Meça sua evolução em relação ao Dia 1 e prepare os próximos meses.", days:[
   {test:true,tasks:[T("Reteste (10 min)","Volte ao vídeo do All Ears English do Dia 1. Quanto entende agora (em %)?"),T("Teste novo (15 min)","Vídeo nativo inédito de 5 min, sem legenda. Anote a %."),T("Comparação (5 min)","Compare os dois números com o teste do Dia 1.")]},
-  {review:true,tasks:[T("Caderno de erros (10 min)","Liste os 3 tipos de erro que mais apareceram no mês."),T("Resumo oral (10 min)","Grave 2 min em inglês sobre o mês."),T("Planejamento (10 min)","Me conte no chat seus resultados para montarmos o mês 2.")]}
+  {review:true,tasks:[T("Caderno de erros (10 min)","Liste os 3 tipos de erro que mais apareceram no mês."),T("Resumo oral (10 min)","Grave 2 min em inglês sobre o mês."),T("Planejamento (10 min)","Revise seus resultados e abra o Mês 2 na trilha: o plano continua por mais 5 meses.")]}
  ]}
 ];
+
+// ===== Meses 2 a 6: gerados a partir das histórias, do vocabulário e das fontes =====
+const P=(n,u)=>[n,u];
+const MONTHS=[
+ {name:"Mês 2",theme:"Notícias e Fatos",
+  pool:[P("BBC Learning English","https://www.bbc.co.uk/learningenglish"),P("VOA Learning English","https://learningenglish.voanews.com"),P("NPR","https://www.npr.org"),P("The Guardian","https://www.theguardian.com"),P("ABC News Australia","https://www.abc.net.au/news"),P("CBC News","https://www.cbc.ca/news")],
+  weeks:[["Manchetes e Notícias Curtas","Entenda o assunto de uma notícia só pelo áudio e pela manchete."],["Clima, Trânsito e Serviços","Vocabulário do dia a dia: previsão do tempo, transporte e avisos."],["Política e Economia sem Medo","Palavras que aparecem em notícias sobre eleições, preços e empregos."],["Reportagens e Opinião","Acompanhe textos mais longos e identifique a opinião de quem escreve."]]},
+ {name:"Mês 3",theme:"Tecnologia e Trabalho",
+  pool:[P("The Verge","https://www.theverge.com"),P("Wired","https://www.wired.com"),P("TechCrunch","https://techcrunch.com"),P("BBC Innovation","https://www.bbc.com/innovation"),P("Engadget","https://www.engadget.com"),P("CNET","https://www.cnet.com")],
+  weeks:[["Gadgets e Aplicativos","Aprenda a falar de produtos, telas, baterias e atualizações."],["Internet e Privacidade","Entenda notícias sobre dados, segurança e redes sociais."],["Trabalho Remoto e Reuniões","Vocabulário de reuniões, prazos, e-mails e equipes à distância."],["Startups e Carreira","Ouça sobre investimento, ideias de negócio e entrevistas de emprego."]]},
+ {name:"Mês 4",theme:"Corpo, Yoga e Bem-estar",
+  pool:[P("Yoga With Adriene","https://yogawithadriene.com"),P("DoYogaWithMe","https://www.doyogawithme.com"),P("Insight Timer","https://insighttimer.com"),P("Headspace","https://www.headspace.com"),P("Calm","https://www.calm.com"),P("mindbodygreen","https://www.mindbodygreen.com")],
+  weeks:[["Respiração e Meditação","Siga instruções faladas devagar e aprenda o vocabulário do corpo."],["Aulas de Yoga em Inglês","Faça aulas inteiras em inglês, acompanhando só pelo áudio."],["Sono, Rotina e Saúde","Entenda conselhos sobre descanso, hábitos e energia."],["Alimentação e Hábitos","Vocabulário de comida, receitas e escolhas saudáveis."]]},
+ {name:"Mês 5",theme:"Viagem e Cultura",
+  pool:[P("Al Jazeera English","https://www.aljazeera.com"),P("RTÉ News","https://www.rte.ie/news"),P("The Straits Times","https://www.straitstimes.com"),P("The Japan Times","https://www.japantimes.co.jp"),P("NZ Herald","https://www.nzherald.co.nz"),P("South China Morning Post","https://www.scmp.com")],
+  weeks:[["Aeroportos e Hotéis","Situações de viagem: check-in, reservas, atrasos e problemas."],["Cidades e Transporte","Peça e entenda indicações, horários e preços."],["Comida e Festivais","Restaurantes, receitas, feiras e eventos culturais."],["Arte, Música e História","Ouça sobre museus, artistas e acontecimentos do passado."]]},
+ {name:"Mês 6",theme:"Fluência e Inglês Nativo",
+  pool:[P("NPR","https://www.npr.org"),P("The Guardian","https://www.theguardian.com"),P("BBC News","https://www.bbc.com/news"),P("Ars Technica","https://arstechnica.com"),P("MIT Technology Review","https://www.technologyreview.com"),P("Yoga Journal","https://www.yogajournal.com")],
+  weeks:[["Podcasts Longos","Acompanhe episódios inteiros com menos pausas."],["Conversas Rápidas e Humor","Entenda piadas, gírias e interrupções."],["Entrevistas e Debates","Siga argumentos e opiniões de várias pessoas."],["Consolidação Geral","Revise o que mais errou e feche o ciclo de 6 meses."]]}
+];
+const MODES=[
+ "ouça sem legenda e anote o assunto em uma frase.",
+ "leia uma matéria curta e liste 5 palavras novas.",
+ "escolha um vídeo ou áudio curto e faça shadowing de 1 minuto.",
+ "escolha 1 minuto de áudio e escreva o que ouviu, como no ditado.",
+ "ouça e resuma em 3 frases, falando em voz alta.",
+ "mini-teste: ouça 3 minutos sem legenda e responda quem, o quê e onde.",
+ "dia leve: ouça por prazer, sem anotar nada."
+];
+(function(){
+  const stories=window.STORIES||[];
+  let n=31;
+  MONTHS.forEach(M=>{
+    const sections=M.weeks.map((w,i)=>({title:`${M.name} · Semana ${i+1}: ${w[0]}`,goal:w[1],len:7,close:false}));
+    sections.push({title:`${M.name} · Revisão e Teste: ${M.theme}`,goal:"Revise o mês inteiro e meça sua evolução antes de seguir para o próximo.",len:2,close:true});
+    sections.forEach(sec=>{
+      const days=[];
+      for(let k=0;k<sec.len;k++,n++){
+        const idx=n-31, pos=idx%3, si=stories.length?Math.floor(idx/3)%stories.length:-1, st=si>=0?stories[si]:null;
+        const src=M.pool[idx%M.pool.length], title=st?st.title:"uma história";
+        const t1=[
+          {l:"Leitura (10 min)",x:`História nova: "${title}"${st?` (${st.level})`:""}. Leia, toque nas frases para ouvir e responda às 3 perguntas.`},
+          {l:"Shadowing (10 min)",x:`Releia "${title}" em voz alta. Escolha 3 frases e repita imitando o ritmo; depois ouça sem olhar o texto.`},
+          {l:"Resumo oral (10 min)",x:`Conte "${title}" com suas palavras, em inglês e em voz alta, em 3 frases. Anote 3 palavras novas.`}
+        ][pos];
+        if(si>=0) t1.go={type:"story",i:si,label:"Abrir a história"};
+        const t2=[
+          {l:"Palavras (10 min)",x:`Abra os cards de palavras: veja o inglês, tente lembrar o português e só então toque em Revelar. Foque as palavras de "${title}".`,go:{type:"cards",f:"vocab",dir:"en",label:"Abrir os cards"}},
+          {l:"Palavras ao contrário (10 min)",x:"Agora veja a palavra em português e tente dizer em inglês antes de revelar.",go:{type:"cards",f:"vocab",dir:"pt",label:"Abrir os cards"}},
+          {l:"Frases (10 min)",x:"Revise 10 frases nos cards de frases, ouvindo cada uma antes de revelar.",go:{type:"cards",f:"frases",label:"Abrir os cards"}}
+        ][pos];
+        const t3={l:"Escuta (10 min)",x:`${src[0]}: ${MODES[idx%7]}`,url:src[1]};
+        const flags=sec.close?(k===0?{test:true}:{review:true}):(k===sec.len-1?{review:true}:{});
+        days.push(Object.assign({tasks:[t1,t2,t3]},flags));
+      }
+      WEEKS.push({title:sec.title,goal:sec.goal,days});
+    });
+  });
+})();
 // flatten
 const DAYS=[]; WEEKS.forEach((w,wi)=>w.days.forEach(d=>{const n=DAYS.length; const dt=new Date(START); dt.setDate(START.getDate()+n); d.n=n+1; d.week=wi; d.date=dt; DAYS.push(d);}));
 const key=(n,i)=>`d${n}t${i}`;
@@ -572,7 +649,7 @@ let ref=null, saving=Promise.resolve();
 const $=id=>document.getElementById(id);
 
 function todayIndex(){const t=new Date(); t.setHours(0,0,0,0); const s=new Date(START); return Math.round((t-s)/864e5);}
-let curWeek=(()=>{const i=todayIndex(); return (i>=0&&i<30)?DAYS[i].week:0;})();
+let curWeek=11, pw=0; // curWeek: tela atual (20 = plano da semana pw)
 
 function persist(){
   try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}
@@ -591,7 +668,7 @@ function renderWave(){
     b.setAttribute("aria-label",`Dia ${d.n}, ${fmt(d.date)}: ${c} de 3 tarefas`);
     b.title=`Dia ${d.n} · ${c}/3`;
     const s=document.createElement("span"); s.style.height=(12+c*29)+"%"; b.appendChild(s);
-    b.onclick=()=>{curWeek=d.week; render(); setTimeout(()=>document.getElementById("day"+d.n)?.scrollIntoView({behavior:"smooth",block:"start"}),30);};
+    b.onclick=()=>openDay(d.week,d.n);
     w.appendChild(b);
   });
   $("stDone").textContent=Object.values(state.done).filter(Boolean).length;
@@ -605,22 +682,21 @@ const RAIL=[
   {id:"missoes",label:"Missões",icon:"🎯",first:16},
   {id:"loja",label:"Loja",icon:"🛍️",first:17},
   {id:"perfil",label:"Perfil",icon:"👤",first:18},
-  {id:"mais",label:"Mais",icon:"➕",first:19},
-  {id:"classico",label:"Versão clássica",icon:"🗂️",href:"classico.html"}
+  {id:"fontes",label:"Fontes",icon:"🔗",href:"fontes.html"}
 ];
 const SUBS={
-  aprender:[["Trilha",13],["Semana 1",0],["Semana 2",1],["Semana 3",2],["Semana 4",3],["Final",4]],
+  aprender:[["Trilha",13],["Semana atual",20]],
   praticar:[["Visão geral",14],["Cards",6],["Quiz",7],["Fala",8],["Áudio",9],["Ditado",5],["Histórias",10]],
   perfil:[["Perfil",18],["Conquistas",12]]
 };
 function groupOf(w){
   if(w===11) return "inicio";
-  if(w===13||w<=4) return "aprender";
+  if(w===13||w===20) return "aprender";
   if(w===14||[5,6,7,8,9,10].includes(w)) return "praticar";
   if(w===16) return "missoes";
   if(w===17) return "loja";
   if(w===18||w===12) return "perfil";
-  return "mais";
+  return "inicio";
 }
 function go(i){
   document.body.classList.remove("menu-open");
@@ -630,10 +706,14 @@ function go(i){
   if(i!==9) stopAudio();
   render(); window.scrollTo({top:0,behavior:"smooth"});
 }
-function openCards(filter){ cardFilter=filter; go(6); }
+function openTaskGo(g){
+  if(g.type==="story"){ sty={i:g.i,ans:{},lvl:"Todos"}; go(10); }
+  else if(g.type==="cards"){ if(g.dir){ state.vdir=g.dir; persist(); } openCards(g.f); }
+}
+function openCards(filter){ cardFilter=(filter===undefined?"vocab":filter); go(6); }
 function openDay(w,n){
   document.body.classList.remove("menu-open");
-  curWeek=w; render();
+  pw=w; curWeek=20; render();
   setTimeout(()=>document.getElementById("day"+n)?.scrollIntoView({behavior:"smooth",block:"start"}),50);
 }
 
@@ -649,7 +729,7 @@ function renderTabs(){
       const sub=el("div","navsub");
       SUBS[g.id].forEach(([l,w])=>{
         const x=el("button","nvs",l); x.setAttribute("aria-current",w===curWeek?"page":"false");
-        x.onclick=()=>{ if(w===6) openCards(null); else go(w); };
+        x.onclick=()=>{ if(w===6) openCards("vocab"); else if(w===20){ pw=DAYS[currentDayIdx()].week; go(20); } else go(w); };
         sub.appendChild(x);
       });
       t.appendChild(sub);
@@ -669,10 +749,10 @@ const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2
 
 function renderMain(){
   const m=$("main"); m.innerHTML="";
-  const VIEWS={5:renderDictation,6:renderCards,7:renderQuiz,8:renderFala,9:renderAudio,10:renderStories,11:renderInicio,12:renderBadges,13:renderTrilha,14:renderPraticar,16:renderMissoes,17:renderLoja,18:renderPerfil,19:renderMais};
+  const VIEWS={5:renderDictation,6:renderCards,7:renderQuiz,8:renderFala,9:renderAudio,10:renderStories,11:renderInicio,12:renderBadges,13:renderTrilha,14:renderPraticar,16:renderMissoes,17:renderLoja,18:renderPerfil};
   if(curWeek!==9) stopAudio();
   if(VIEWS[curWeek]){VIEWS[curWeek](m);return;}
-  const W=WEEKS[curWeek]; const ti=todayIndex();
+  const W=WEEKS[pw]; const ti=todayIndex();
   const h=document.createElement("div"); h.className="weekhead";
   h.innerHTML=`<h2></h2><p></p>`; h.querySelector("h2").textContent=W.title; h.querySelector("p").textContent=W.goal; m.appendChild(h);
   W.days.forEach(d=>{
@@ -691,6 +771,12 @@ function renderMain(){
       const vs=VIDS[`${d.n}-${i}`]; if(vs){const vl=document.createElement("div"); vl.className="vids";
         vs.forEach(v=>{const l=document.createElement("a"); l.className="vid"; l.href=vurl(v); l.target="_blank"; l.rel="noopener noreferrer"; l.textContent="▶ "+v.t; l.onclick=e=>e.stopPropagation(); vl.appendChild(l);});
         body.appendChild(vl);}
+      if(tk.go||tk.url){
+        const ab=document.createElement("div"); ab.className="vids";
+        if(tk.go){ const gb=document.createElement("button"); gb.type="button"; gb.className="vid"; gb.textContent="▶ "+(tk.go.label||"Abrir"); gb.onclick=e=>{e.stopPropagation(); openTaskGo(tk.go);}; ab.appendChild(gb); }
+        if(tk.url){ const l=document.createElement("a"); l.className="vid"; l.href=tk.url; l.target="_blank"; l.rel="noopener noreferrer"; l.textContent="↗ Abrir a fonte"; l.onclick=e=>e.stopPropagation(); ab.appendChild(l); }
+        body.appendChild(ab);
+      }
       row.append(btn,body); card.appendChild(row);
     });
     const rd=READ[d.n]; if(rd){const r=document.createElement("div"); r.className="readx";
@@ -855,13 +941,24 @@ function allCards(){
   const out=[];
   SETS.forEach((st,si)=>st.items.forEach((it,i)=>out.push({id:`c${si}i${i}`,front:it.s,back:it.t,set:st.name})));
   (window.DECK||[]).forEach((d,i)=>out.push({id:`d${i}`,front:d[1],back:d[0],set:d[2]}));
+  (window.STORIES||[]).forEach((st,si)=>st.vocab.forEach((v,j)=>out.push({id:`v${si}_${j}`,kind:"vocab",en:v[0],pt:v[1],story:st.title,front:v[0],back:v[1],set:"Palavras"})));
   ((state.custom)||[]).forEach(c=>out.push({id:c.id,front:c.s||"",back:c.t,set:c.set||"Meus cards"}));
   return out;
 }
 function cardById(id){return allCards().find(c=>c.id===id);}
 function cardState(id){return (state.cards||{})[id]||{ease:2.5,ivl:0,reps:0,due:0};}
-let cardFilter=null;
-function dueCards(limit){const today=DAY(); return allCards().filter(c=>(!cardFilter||c.set===cardFilter)&&cardState(c.id).due<=today).sort((a,b)=>cardState(a.id).due-cardState(b.id).due).slice(0,limit);}
+let cardFilter="vocab";
+function matchFilter(c,f){
+  if(!f) return true;
+  if(f==="vocab") return c.kind==="vocab";
+  if(f==="frases") return !c.kind&&c.set!=="Erros do ditado"&&c.set!=="Meus cards";
+  if(f==="erros") return c.set==="Erros do ditado";
+  if(f==="meus") return c.set==="Meus cards";
+  return true;
+}
+const vdirNow=()=>state.vdir||"en";
+function dirFor(c){ if(vdirNow()!=="mix") return vdirNow(); let h=0; for(const ch of c.id) h=(h*31+ch.charCodeAt(0))|0; return (Math.abs(h)+DAY())%2?"en":"pt"; }
+function dueCards(limit){const today=DAY(); return allCards().filter(c=>matchFilter(c,cardFilter)&&cardState(c.id).due<=today).sort((a,b)=>cardState(a.id).due-cardState(b.id).due).slice(0,limit);}
 function nextState(c,q){
   let {ease,ivl,reps}=c;
   if(q===0){ivl=1; ease=Math.max(1.3,ease-0.2); reps=0;}
@@ -909,16 +1006,34 @@ function rateCard(id,q){
 function previewIvl(id,q){const n=nextState(cardState(id),q); return n.ivl<=1?"1 dia":`${n.ivl} dias`;}
 function sayEn(text){try{speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; speechSynthesis.speak(u);}catch(e){}}
 
+const CARD_FILTERS=[["vocab","Palavras"],["frases","Frases"],["erros","Erros do ditado"],["meus","Meus cards"],[null,"Tudo"]];
+function rateRow(c){
+  const row=el("div","rate");
+  [["Errei",0],["Difícil",1],["Bom",2],["Fácil",3]].forEach(([l,q])=>{
+    const b=el("button", q===0?"ghost":"primary", `${l} · ${previewIvl(c.id,q)}`);
+    b.onclick=()=>{rateCard(c.id,q); cs.done++; cs.i++; cs.shown=false; renderMain();};
+    row.appendChild(b);
+  });
+  return row;
+}
 function renderCards(m){
   if(!cs.queue){cs={queue:dueCards(10).map(c=>c.id),i:0,shown:false,done:0};}
+  pageTitle(m,"Cards","Veja a palavra ou a frase, tente lembrar e só então toque em Revelar.");
   const st=state.streak||{count:0,last:-1};
-  const alive=st.last===DAY()||st.last===DAY()-1;
   const hdr=el("div","cardhead");
-  hdr.append(el("span",null,`🔥 ${alive?st.count:0} ${(alive?st.count:0)===1?"dia":"dias"} seguidos`), el("span",null,`⭐ ${state.xp||0} XP`));
+  hdr.append(el("span",null,`🔥 ${streakNow()} ${streakNow()===1?"dia":"dias"} seguidos`), el("span",null,`⭐ ${state.xp||0} XP`));
   m.appendChild(hdr);
+  const fb=el("div","bar2"); fb.setAttribute("role","group"); fb.setAttribute("aria-label","Tipo de card");
+  CARD_FILTERS.forEach(([k,l])=>{ const b=btn("chip",l,()=>{cardFilter=k; cs={queue:null,i:0,shown:false,done:0}; renderMain();}); b.setAttribute("aria-pressed",cardFilter===k); fb.appendChild(b); });
+  m.appendChild(fb);
+  if(cardFilter==="vocab"){
+    const db=el("div","bar2"); db.setAttribute("role","group"); db.setAttribute("aria-label","Direção");
+    [["en","Inglês → Português"],["pt","Português → Inglês"],["mix","Misto"]].forEach(([k,l])=>{ const b=btn("chip",l,()=>{state.vdir=k; persist(); cs.shown=false; renderMain();}); b.setAttribute("aria-pressed",vdirNow()===k); db.appendChild(b); });
+    m.appendChild(db);
+  }
   const box=el("section","card-box");
   if(cs.i>=cs.queue.length){
-    if(!cs.queue.length){ box.append(el("h2",null,"Nada por aqui ainda"), el("p","dzmeta",cardFilter?"Esta coleção está vazia. Ela se enche conforme você erra frases no ditado ou cria cards.":"Nenhum card para revisar agora.")); }
+    if(!cs.queue.length){ box.append(el("h2",null,"Nada por aqui ainda"), el("p","dzmeta",(cardFilter==="erros"||cardFilter==="meus")?"Esta coleção está vazia. Ela se enche conforme você erra frases no ditado ou cria cards.":"Nenhum card para revisar agora.")); }
     else box.append(el("h2",null,"Sessão concluída!"), el("p","dzmeta",`Você revisou ${cs.done} ${cs.done===1?"card":"cards"} nesta sessão.`));
     const again=el("button","primary","Estudar mais 10");
     again.onclick=()=>{cs={queue:null,i:0,shown:false,done:0}; renderMain();};
@@ -926,21 +1041,29 @@ function renderCards(m){
   } else {
     const c=cardById(cs.queue[cs.i]);
     box.appendChild(el("p","dzmeta",`Card ${cs.i+1} de ${cs.queue.length} · ${c.set}`));
-    box.appendChild(el("p","cardfront",c.front));
-    const play=el("button","ghost","🔊 Ouvir a frase"); play.onclick=()=>sayEn(c.back);
-    box.appendChild(play);
-    if(!cs.shown){
-      const show=el("button","primary","Mostrar frase"); show.onclick=()=>{cs.shown=true; renderMain();};
-      box.appendChild(show);
+    if(c.kind==="vocab"){
+      const d=dirFor(c), frontTxt=d==="en"?c.en:c.pt, backTxt=d==="en"?c.pt:c.en;
+      box.appendChild(el("p","dzmeta",d==="en"?"Em inglês":"Em português"));
+      box.appendChild(el("p","cardfront big",frontTxt));
+      if(d==="en") box.appendChild(btn("ghost","🔊 Ouvir",()=>sayEn(c.en)));
+      if(!cs.shown){
+        box.appendChild(btn("primary","Revelar",()=>{cs.shown=true; renderMain();}));
+      } else {
+        box.appendChild(el("p","dzmeta",d==="en"?"Em português":"Em inglês"));
+        box.appendChild(el("p","cardback",backTxt));
+        if(d==="pt") box.appendChild(btn("ghost","🔊 Ouvir",()=>sayEn(c.en)));
+        box.appendChild(el("p","dzmeta",`Da história: ${c.story}`));
+        box.appendChild(rateRow(c));
+      }
     } else {
-      box.appendChild(el("p","cardback",c.back));
-      const row=el("div","rate");
-      [["Errei",0],["Difícil",1],["Bom",2],["Fácil",3]].forEach(([l,q])=>{
-        const b=el("button", q===0?"ghost":"primary", `${l} · ${previewIvl(c.id,q)}`);
-        b.onclick=()=>{rateCard(c.id,q); cs.done++; cs.i++; cs.shown=false; renderMain();};
-        row.appendChild(b);
-      });
-      box.appendChild(row);
+      if(c.front) box.appendChild(el("p","cardfront",c.front));
+      box.appendChild(btn("ghost","🔊 Ouvir a frase",()=>sayEn(c.back)));
+      if(!cs.shown){
+        box.appendChild(btn("primary","Revelar",()=>{cs.shown=true; renderMain();}));
+      } else {
+        box.appendChild(el("p","cardback",c.back));
+        box.appendChild(rateRow(c));
+      }
     }
   }
   m.appendChild(box);
@@ -949,18 +1072,18 @@ function renderCards(m){
   add.appendChild(el("h3",null,"Adicionar seus cards"));
   add.appendChild(el("p","dzmeta","Escreva uma frase em inglês que você quer memorizar. Ela entra na fila de revisão."));
   const t=el("input"); t.type="text"; t.placeholder="Frase em inglês"; t.setAttribute("aria-label","Frase em inglês");
-  const s=el("input"); s.type="text"; s.placeholder="Como soa (opcional)"; s.setAttribute("aria-label","Como soa");
-  [t,s].forEach(x=>x.style.cssText="width:100%;font:inherit;padding:.6rem .7rem;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)");
+  const sp=el("input"); sp.type="text"; sp.placeholder="Como soa (opcional)"; sp.setAttribute("aria-label","Como soa");
+  [t,sp].forEach(x=>x.style.cssText="width:100%;font:inherit;padding:.6rem .7rem;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)");
   const save=el("button","primary","Salvar card");
   const msg=el("p","dzstatus","");
   save.onclick=()=>{
     const txt=t.value.trim(); if(!txt){msg.textContent="Escreva a frase antes de salvar.";return;}
     state.custom=state.custom||[];
-    state.custom.push({id:"u"+Date.now(),t:txt,s:s.value.trim()});
+    state.custom.push({id:"u"+Date.now(),t:txt,s:sp.value.trim()});
     persist(); msg.textContent="Card salvo. Ele aparece na próxima sessão.";
-    t.value=""; s.value="";
+    t.value=""; sp.value="";
   };
-  add.append(t,s,save,msg);
+  add.append(t,sp,save,msg);
   m.appendChild(add);
 }
 
@@ -970,7 +1093,7 @@ function shuffle(a){a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floo
 const strip=w=>w.replace(/[.,!?;:"]/g,"");
 function phrasePool(){
   const seen=new Set(), out=[];
-  allCards().forEach(c=>{const n=c.back.split(/\s+/).length; if(n>=4&&n<=12&&!seen.has(c.back)){seen.add(c.back); out.push(c.back);}});
+  allCards().forEach(c=>{if(c.kind==="vocab") return; const n=c.back.split(/\s+/).length; if(n>=4&&n<=12&&!seen.has(c.back)){seen.add(c.back); out.push(c.back);}});
   return out;
 }
 function pageTitle(m,h,p){const w=el("div","weekhead"); w.append(el("h2",null,h)); if(p) w.append(el("p",null,p)); m.appendChild(w);}
@@ -1102,7 +1225,7 @@ function renderAudio(m){
   pageTitle(m,"Modo áudio","Ouça sem olhar a tela. Depois de cada frase há uma pausa para você repetir em voz alta.");
   const box=el("section","card-box");
   if(!TTS){ box.append(el("p","dzmeta","Seu navegador não tem voz disponível. Tente pelo Chrome ou Safari.")); m.appendChild(box); return; }
-  const cats=["Todas",...new Set(allCards().map(c=>c.set))];
+  const cats=["Todas",...new Set(allCards().filter(c=>c.kind!=="vocab").map(c=>c.set))];
   const sel=el("select"); sel.setAttribute("aria-label","Categoria");
   cats.forEach(c=>{const o=el("option",null,c); o.value=c; if(c===au.cat) o.selected=true; sel.appendChild(o);});
   sel.onchange=()=>{au.cat=sel.value;};
@@ -1113,7 +1236,7 @@ function renderAudio(m){
   const status=el("p","dzstatus",au.running?"Tocando…":"");
   const play=btn("primary","▶ Iniciar",()=>{
     stopAudio();
-    const pool=allCards().filter(c=>au.cat==="Todas"||c.set===au.cat);
+    const pool=allCards().filter(c=>c.kind!=="vocab"&&(au.cat==="Todas"||c.set===au.cat));
     runAudio(shuffle(pool).slice(0,15),status);
   });
   const stop=btn("ghost","⏹ Parar",()=>{stopAudio(); status.textContent="Parado.";});
@@ -1122,46 +1245,30 @@ function renderAudio(m){
   m.appendChild(box);
 }
 
-// ===== Histórias curtas com perguntas de compreensão =====
-const STORIES=[
- {title:"The coffee that changed the morning",level:"A2",text:[
-   "Anna was running late for work. She missed her bus by one minute.",
-   "So she decided to walk to the cafe near her office. She ordered a coffee and sat by the window.",
-   "A man next to her said, \"Nice day, isn't it?\" They started talking, and he turned out to be the owner of a small company.",
-   "A week later, Anna had a new job."],
-  vocab:["running late: atrasada","turned out to be: acabou sendo","by one minute: por um minuto"],
-  qs:[{q:"Why did Anna walk to the cafe?",o:["She missed her bus","She wanted exercise","Her car broke down"],a:0},
-      {q:"Who was the man at the cafe?",o:["Her boss","A company owner","A waiter"],a:1},
-      {q:"What happened a week later?",o:["She lost her job","She moved to a new city","She got a new job"],a:2}]},
- {title:"A trip that did not go as planned",level:"B1",text:[
-   "Tom and Lucy had been looking forward to the trip for months. They booked a small hotel near the beach.",
-   "When they arrived, the receptionist told them the hotel had given their room to someone else.",
-   "Instead of getting angry, Lucy asked if there was another option. After a few phone calls, they got a bigger room for the same price.",
-   "In the end, it turned out to be the best trip they had ever taken."],
-  vocab:["looking forward to: ansiosos por","booked: reservaram","in the end: no fim"],
-  qs:[{q:"What was the problem at the hotel?",o:["The room was dirty","Their room was given away","The beach was closed"],a:1},
-      {q:"How did Lucy react?",o:["She asked for another option","She left the hotel","She complained loudly"],a:0},
-      {q:"How was the new room?",o:["Smaller and cheaper","Bigger for the same price","The same as before"],a:1}]},
- {title:"Learning by listening",level:"B1",text:[
-   "Maria started learning English two years ago. At first, she could read well, but she could not understand people when they spoke fast.",
-   "She decided to listen for thirty minutes every day. She chose short podcasts and repeated each sentence out loud.",
-   "Little by little, she began to recognize the words she already knew. Not only did she understand more, but she also felt more confident.",
-   "Now she says the secret was not studying harder, but listening every single day."],
-  vocab:["at first: no começo","little by little: pouco a pouco","out loud: em voz alta"],
-  qs:[{q:"What was Maria's problem at the start?",o:["She could not read","She could not understand fast speech","She had no time"],a:1},
-      {q:"What did she do every day?",o:["Listened for thirty minutes","Read for an hour","Wrote a diary"],a:0},
-      {q:"What was the secret, according to her?",o:["Studying harder","Using a dictionary","Listening every day"],a:2}]}
-];
-let sty={i:0,ans:{}};
+// ===== Histórias: 51 textos com filtro por nível =====
+const STORIES=window.STORIES||[];
+let sty={i:0,ans:{},lvl:"Todos"};
+const storyDone=t=>!!(state.stories&&state.stories[t]!=null);
+function storyOfDay(){const ti=todayIndex(); return STORIES.length?Math.max(0,ti)%STORIES.length:0;}
 function renderStories(m){
-  pageTitle(m,"Histórias","Leia, toque numa frase para ouvir e responda às perguntas.");
-  const tabs=el("div","sub-tabs"); tabs.style.margin="0 0 1rem";
-  STORIES.forEach((s,i)=>{const b=btn(null,s.title,()=>{sty={i,ans:{}}; renderMain();}); b.setAttribute("aria-selected",i===sty.i); tabs.appendChild(b);});
-  m.appendChild(tabs);
+  pageTitle(m,"Histórias",`${STORIES.length} textos curtos. Toque numa frase para ouvir e responda às perguntas.`);
+  if(!STORIES.length){ m.appendChild(el("p","dzmeta","Não foi possível carregar as histórias. Recarregue a página.")); return; }
+  const bar=el("div","bar2"); bar.setAttribute("role","group"); bar.setAttribute("aria-label","Nível");
+  ["Todos","A2","B1","B2"].forEach(l=>{ const b=btn("chip",l==="Todos"?"Todos os níveis":l,()=>{sty.lvl=l; sty.ans={}; renderMain();}); b.setAttribute("aria-pressed",sty.lvl===l); bar.appendChild(b); });
+  m.appendChild(bar);
+  const list=STORIES.map((s,i)=>({s,i})).filter(x=>sty.lvl==="Todos"||x.s.level===sty.lvl);
+  if(list.length&&!list.some(x=>x.i===sty.i)){ sty.i=list[0].i; sty.ans={}; }
+  const sel=el("select"); sel.setAttribute("aria-label","Escolher história");
+  list.forEach(({s,i})=>{ const o=el("option",null,`${storyDone(s.title)?"✓ ":""}${i+1}. ${s.title} · ${s.level} · ${s.theme}`); o.value=i; if(i===sty.i) o.selected=true; sel.appendChild(o); });
+  sel.onchange=()=>{sty.i=Number(sel.value); sty.ans={}; renderMain();};
+  const row=el("div","dzctl"); row.append(sel,
+    btn("ghost","🎲 Aleatória",()=>{const x=list[Math.floor(Math.random()*list.length)]; sty.i=x.i; sty.ans={}; renderMain();}),
+    btn("ghost","📅 História de hoje",()=>{sty.lvl="Todos"; sty.i=storyOfDay(); sty.ans={}; renderMain();}));
+  m.appendChild(row);
   const s=STORIES[sty.i], box=el("section","card-box");
-  box.append(el("h2",null,s.title),el("p","dzmeta",`Nível ${s.level} · toque numa frase para ouvir`));
+  box.append(el("h2",null,s.title),el("p","dzmeta",`Nível ${s.level} · ${s.theme} · toque numa frase para ouvir`));
   s.text.forEach(line=>{const p=el("p","story",line); p.tabIndex=0; p.setAttribute("role","button"); p.onclick=()=>sayEn(line); p.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault(); sayEn(line);}}; box.appendChild(p);});
-  const v=el("div","vocab"); v.append(el("b",null,"Vocabulário: ")); v.append(document.createTextNode(s.vocab.join(" · "))); box.appendChild(v);
+  const v=el("div","vocab"); v.append(el("b",null,"Vocabulário: ")); v.append(document.createTextNode(s.vocab.map(w=>`${w[0]} (${w[1]})`).join(" · "))); box.appendChild(v);
   s.qs.forEach((q,qi)=>{
     box.append(el("p","dzmeta",`${qi+1}. ${q.q}`));
     const g=el("div","opts"); const done=sty.ans[qi]!=null;
@@ -1171,15 +1278,19 @@ function renderStories(m){
       b.onclick=()=>{
         sty.ans[qi]=oi;
         if(oi===q.a){ addXp(10); stat("storyOk"); }
-        state.stories=state.stories||{}; state.stories[s.title]=Object.keys(sty.ans).length;
+        if(Object.keys(sty.ans).length===s.qs.length){ state.stories=state.stories||{}; state.stories[s.title]=s.qs.filter((x,k)=>sty.ans[k]===x.a).length; }
         persist(); renderMain();
       };
       g.appendChild(b);
     });
     box.appendChild(g);
   });
-  const total=Object.keys(sty.ans).length;
-  if(total===s.qs.length){const ok=s.qs.filter((q,i)=>sty.ans[i]===q.a).length; box.append(el("p","fb good",`Você acertou ${ok} de ${s.qs.length}.`));}
+  if(Object.keys(sty.ans).length===s.qs.length){const ok=s.qs.filter((q,i)=>sty.ans[i]===q.a).length; box.append(el("p","fb good",`Você acertou ${ok} de ${s.qs.length}.`));}
+  const nav=el("div","dzplay");
+  const pos=list.findIndex(x=>x.i===sty.i);
+  nav.append(btn("ghost","← Anterior",()=>{ if(pos>0){sty.i=list[pos-1].i; sty.ans={}; renderMain();} }),
+             btn("primary","Próxima →",()=>{ if(pos<list.length-1){sty.i=list[pos+1].i; sty.ans={}; renderMain();} }));
+  box.appendChild(nav);
   m.appendChild(box);
 }
 
@@ -1197,7 +1308,12 @@ const BADGES=[
  {n:"1000 XP",d:"Chegue a 1000 XP",e:"💫",ok:s=>(s.xp||0)>=1000},
  {n:"Ouvido afiado",d:"Faça 10 frases do ditado",e:"👂",ok:s=>Object.keys(s.dict||{}).length>=10},
  {n:"Constância",d:"Marque 30 tarefas do plano",e:"✅",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=30},
- {n:"Plano completo",d:"Marque as 90 tarefas",e:"🏆",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=90},
+ {n:"Primeiro mês",d:"Marque 90 tarefas do plano",e:"🏆",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=90},
+ {n:"Metade do caminho",d:"Marque 270 tarefas do plano",e:"⛰️",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=270},
+ {n:"Seis meses",d:"Marque as 540 tarefas do plano",e:"🎓",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=540},
+ {n:"10 histórias",d:"Termine 10 histórias",e:"📚",ok:s=>Object.keys(s.stories||{}).length>=10},
+ {n:"50 histórias",d:"Termine 50 histórias",e:"🏛️",ok:s=>Object.keys(s.stories||{}).length>=50},
+ {n:"100 palavras",d:"Revise 100 cards",e:"🔤",ok:s=>((s.stats||{}).reviews||0)>=100},
  {n:"Mestre do quiz",d:"20 acertos no quiz",e:"🧩",ok:s=>((s.stats||{}).quizOk||0)>=20},
  {n:"Boa pronúncia",d:"10 frases faladas com 80%+",e:"🎤",ok:s=>((s.stats||{}).fala||0)>=10},
  {n:"Ouvinte",d:"Complete 3 sessões de áudio",e:"🎧",ok:s=>((s.stats||{}).audio||0)>=3},
@@ -1233,18 +1349,34 @@ function streakNow(){
 const UNIT_TITLE=w=>w.title.replace(/^[^:]+:\s*/,"");
 function dayStatus(d){const c=d.tasks.filter((_,k)=>state.done[key(d.n,k)]).length; return c===d.tasks.length?"done":c>0?"part":"todo";}
 function currentDayIdx(){const i=DAYS.findIndex(d=>dayStatus(d)!=="done"); return i<0?DAYS.length-1:i;}
-function planTasksToday(){const ti=todayIndex(); if(ti<0||ti>=30) return 0; const d=DAYS[ti]; return d.tasks.filter((_,k)=>state.done[key(d.n,k)]).length;}
+function planTasksToday(){const ti=todayIndex(); if(ti<0||ti>=DAYS.length) return 0; const d=DAYS[ti]; return d.tasks.filter((_,k)=>state.done[key(d.n,k)]).length;}
 function dueCount(){const t=DAY(); let rev=0,nov=0; allCards().forEach(c=>{const cs0=cardState(c.id); if(cs0.reps>0){ if(cs0.due<=t) rev++; } else nov++;}); return {rev,nov};}
 function weekXp(){let x=0; for(let i=0;i<7;i++) x+=((state.xpLog||{})[DAY()-i]||0); return x;}
 
-const MISSIONS=[
-  {id:"xp",icon:"⚡",t:"Ganhe 50 XP",goal:GOAL_XP,val:()=>todayXp(),gems:10},
-  {id:"plano",icon:"📅",t:"Conclua 1 tarefa do plano",goal:1,val:()=>planTasksToday(),gems:10},
-  {id:"cards",icon:"🃏",t:"Revise 10 cards",goal:10,val:()=>dayLog().reviews,gems:5},
-  {id:"quiz",icon:"🧩",t:"Acerte 5 perguntas no quiz",goal:5,val:()=>dayLog().quiz,gems:5},
-  {id:"fala",icon:"🎤",t:"Fale 3 frases com 80% ou mais",goal:3,val:()=>dayLog().fala,gems:5},
-  {id:"audio",icon:"🎧",t:"Complete uma sessão de áudio",goal:1,val:()=>dayLog().audio,gems:5}
-];
+// Missões que olham o dia de hoje: lição do dia do plano, atraso a recuperar e rotação por dia da semana.
+const WDN=["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+function missionsToday(){
+  const wd=new Date().getDay(), ti=todayIndex(), cur=currentDayIdx(), list=[];
+  list.push({id:"xp",icon:"⚡",t:`Ganhe ${GOAL_XP} XP`,goal:GOAL_XP,val:()=>todayXp(),gems:10});
+  if(ti>=0&&ti<DAYS.length){
+    const d=DAYS[ti];
+    list.push({id:"plano",icon:"📅",t:`Conclua a lição de hoje (Dia ${d.n})`,goal:d.tasks.length,val:()=>planTasksToday(),gems:15});
+    if(cur<ti&&DAYS[cur]){ const dc=DAYS[cur]; list.push({id:"atraso",icon:"⏪",t:`Recupere o Dia ${dc.n} que ficou para trás`,goal:dc.tasks.length,val:()=>dc.tasks.filter((_,k)=>state.done[key(dc.n,k)]).length,gems:10}); }
+  } else if(ti>=DAYS.length){
+    list.push({id:"fim",icon:"🏁",t:"Plano concluído: revise as 3 histórias que mais gostou",goal:3,val:()=>dayLog().story,gems:10});
+  } else {
+    list.push({id:"inicio",icon:"🗓️",t:"O plano ainda não começou: faça uma história",goal:2,val:()=>dayLog().story,gems:10});
+  }
+  list.push({id:"cards",icon:"🃏",t:"Revise 10 cards",goal:10,val:()=>dayLog().reviews,gems:5});
+  const rot=[
+    {id:"audio",icon:"🎧",t:"Complete uma sessão de áudio",goal:1,val:()=>dayLog().audio,gems:5},
+    {id:"quiz",icon:"🧩",t:"Acerte 5 perguntas no quiz",goal:5,val:()=>dayLog().quiz,gems:5},
+    {id:"fala",icon:"🎤",t:"Fale 3 frases com 80% ou mais",goal:3,val:()=>dayLog().fala,gems:5},
+    {id:"story",icon:"📖",t:"Leia uma história e acerte 2 perguntas",goal:2,val:()=>dayLog().story,gems:10}
+  ];
+  list.push(rot[wd%rot.length],rot[(wd+2)%rot.length]);
+  return list;
+}
 const claimed=id=>!!(state.mc&&state.mc.d===DAY()&&state.mc.ids&&state.mc.ids[id]);
 function claim(ms){
   const d=DAY(); if(!state.mc||state.mc.d!==d) state.mc={d,ids:{}};
@@ -1300,7 +1432,7 @@ function renderStatbar(){
 function renderRight(){
   const r=$("right"); if(!r) return; r.innerHTML="";
   const mi=el("section","wcard"); mi.appendChild(headRow("Missões do dia","VER TODAS",()=>go(16)));
-  MISSIONS.slice(0,3).forEach(ms=>mi.appendChild(missionRow(ms,true))); r.appendChild(mi);
+  missionsToday().slice(0,3).forEach(ms=>mi.appendChild(missionRow(ms,true))); r.appendChild(mi);
   const gl=el("section","wcard center"); gl.appendChild(headRow("Meta do dia")); gl.appendChild(ringEl(todayXp(),GOAL_XP,"XP")); r.appendChild(gl);
 }
 
@@ -1326,27 +1458,36 @@ function renderInicio(m){
   const ht=el("section","wcard"); ht.append(headRow("Últimas 4 semanas"),heatMap(),el("p","dzmeta","Cada quadrado é um dia. Quanto mais forte a cor, mais você estudou.")); two.appendChild(ht);
   m.appendChild(two);
 
-  const pl=el("section","wcard"); pl.appendChild(headRow("Seu plano de 30 dias","ABRIR TRILHA",()=>go(13)));
-  const bar=el("div","bar"); const f=el("div","fill"); f.style.width=Math.round(doneDays/30*100)+"%"; bar.appendChild(f); pl.appendChild(bar);
-  pl.append(el("p","dzmeta",`${doneDays} de 30 dias concluídos · ${tasks} de 90 tarefas feitas`)); m.appendChild(pl);
+  const pl=el("section","wcard"); pl.appendChild(headRow("Seu plano de 6 meses","ABRIR TRILHA",()=>go(13)));
+  const bar=el("div","bar"); const f=el("div","fill"); f.style.width=Math.round(doneDays/DAYS.length*100)+"%"; bar.appendChild(f); pl.appendChild(bar);
+  pl.append(el("p","dzmeta",`${doneDays} de ${DAYS.length} dias concluídos · ${tasks} de ${DAYS.length*3} tarefas feitas`)); m.appendChild(pl);
 
   const mi=el("section","wcard"); mi.appendChild(headRow("Missões de hoje","VER TODAS",()=>go(16)));
-  MISSIONS.slice(0,4).forEach(ms=>mi.appendChild(missionRow(ms,false))); m.appendChild(mi);
+  missionsToday().slice(0,4).forEach(ms=>mi.appendChild(missionRow(ms,false))); m.appendChild(mi);
 
   const sg=el("section","wcard"); sg.appendChild(headRow("Sugestão para agora"));
-  const sug=dc2.rev>0?[`Você tem ${dc2.rev} revisão(ões) vencida(s).`,"Revisar cards",()=>openCards(null)]:
+  const sug=dc2.rev>0?[`Você tem ${dc2.rev} revisão(ões) vencida(s).`,"Revisar cards",()=>openCards("vocab")]:
             todayXp()<GOAL_XP?["Falta pouco para a meta de hoje.","Fazer um quiz",()=>go(7)]:
             ["Meta batida! Que tal ouvir uma sessão de áudio?","Modo áudio",()=>go(9)];
   sg.append(el("p",null,sug[0]),btn("btn3d",sug[1].toUpperCase(),sug[2])); m.appendChild(sg);
 }
 
 // ===== Aprender: trilha em zigue-zague, sem vidas e sem bloqueios =====
+const monthOf=wi=>wi<5?0:1+Math.floor((wi-5)/5);
+const MONTH_NAMES=["Mês 1","Mês 2","Mês 3","Mês 4","Mês 5","Mês 6"];
+let trMonth=null;
 function renderTrilha(m){
   const cur=currentDayIdx();
+  if(trMonth===null) trMonth=monthOf(DAYS[cur].week);
+  pageTitle(m,"Sua trilha de 6 meses",`${DAYS.length} dias, sem vidas e sem bloqueios. Toque num dia para ver as tarefas.`);
+  const bar=el("div","bar2"); bar.setAttribute("role","group"); bar.setAttribute("aria-label","Mês");
+  MONTH_NAMES.forEach((nm,i)=>{ const b=btn("chip",nm,()=>{trMonth=i; renderMain();}); b.setAttribute("aria-pressed",trMonth===i); bar.appendChild(b); });
+  m.appendChild(bar);
   WEEKS.forEach((W,wi)=>{
+    if(monthOf(wi)!==trMonth) return;
     const unit=el("div","unit u"+(wi%5)), top=el("div","unit-top");
-    const lab=el("div"); lab.append(el("div","unit-k",`SEÇÃO ${wi+1}`),el("div","unit-t",UNIT_TITLE(W)));
-    top.append(lab,btn("guia","GUIA",()=>go(wi))); unit.append(top,el("div","unit-g",W.goal)); m.appendChild(unit);
+    const lab=el("div"); lab.append(el("div","unit-k",W.title.split(":")[0].toUpperCase()),el("div","unit-t",UNIT_TITLE(W)));
+    top.append(lab,btn("guia","GUIA",()=>{pw=wi; go(20);})); unit.append(top,el("div","unit-g",W.goal)); m.appendChild(unit);
     const path=el("div","path"), offs=[0,40,68,40,0,-40,-68,-40];
     W.days.forEach((d,k)=>{
       const idx=d.n-1, st=dayStatus(d), row=el("div","node-row");
@@ -1366,22 +1507,24 @@ function renderTrilha(m){
 // ===== Praticar: central de treinos =====
 function renderPraticar(m){
   pageTitle(m,"Praticar","Treinos sem limite. Nada de vidas: erre à vontade e tente de novo.");
-  const n=allCards().length, erros=allCards().filter(c=>c.set==="Erros do ditado").length, meus=allCards().filter(c=>c.set==="Meus cards").length;
+  const all=allCards(), voc=all.filter(c=>c.kind==="vocab").length, fr=all.filter(c=>matchFilter(c,"frases")).length;
+  const erros=all.filter(c=>c.set==="Erros do ditado").length, meus=all.filter(c=>c.set==="Meus cards").length;
   const list=[
-    ["🃏","Cards",`Revisão espaçada de ${n} frases.`,()=>openCards(null),"#7B5CF0"],
+    ["🔤","Palavras",`${voc} palavras: veja em inglês ou português e toque para revelar.`,()=>openCards("vocab"),"#7B5CF0"],
+    ["🃏","Frases",`${fr} frases com revisão espaçada.`,()=>openCards("frases"),"#C24DD6"],
     ["🧩","Quiz","Complete, ordene e ouça. Dez perguntas por rodada.",()=>go(7),"#E0529A"],
     ["🎤","Fala","Fale a frase e veja o que o navegador entendeu.",()=>go(8),"#1FA67A"],
     ["🎧","Modo áudio","Ouça frases e repita em voz alta, sem olhar a tela.",()=>go(9),"#E8833A"],
     ["✍️","Ditado","Escreva o que ouviu, em sotaque americano, britânico ou australiano.",()=>go(5),"#3B82F6"],
-    ["📖","Histórias","Textos curtos com perguntas de compreensão.",()=>go(10),"#C24DD6"]
+    ["📖","Histórias",`${(window.STORIES||[]).length} textos curtos com perguntas de compreensão.`,()=>go(10),"#D6478F"]
   ];
   const grid=el("div","hub");
   list.forEach(([i,t,d,fn,c])=>{ const a=el("button","hubcard"); a.style.setProperty("--hc",c); a.append(el("span","hi",i),el("b",null,t),el("span","dzmeta",d)); a.onclick=fn; grid.appendChild(a); });
   m.appendChild(grid);
   m.appendChild(el("h3","sec","Suas coleções"));
   const g2=el("div","hub");
-  [["🔁","Erros do ditado",`${erros} card(s) criados a partir das frases que você errou.`,()=>openCards("Erros do ditado")],
-   ["✍️","Meus cards",`${meus} card(s) criados por você.`,()=>openCards("Meus cards")]].forEach(([i,t,d,fn])=>{
+  [["🔁","Erros do ditado",`${erros} card(s) criados a partir das frases que você errou.`,()=>openCards("erros")],
+   ["✍️","Meus cards",`${meus} card(s) criados por você.`,()=>openCards("meus")]].forEach(([i,t,d,fn])=>{
     const a=el("button","hubcard slim"); a.append(el("span","hi",i),el("b",null,t),el("span","dzmeta",d)); a.onclick=fn; g2.appendChild(a);
   });
   m.appendChild(g2);
@@ -1389,8 +1532,9 @@ function renderPraticar(m){
 
 // ===== Missões =====
 function renderMissoes(m){
-  pageTitle(m,"Missões do dia","Complete missões e resgate gemas. As missões renovam todo dia.");
-  const box=el("section","wcard"); MISSIONS.forEach(ms=>box.appendChild(missionRow(ms,false))); m.appendChild(box);
+  const hoje=new Date(), ti=todayIndex();
+  pageTitle(m,"Missões de hoje",`${WDN[hoje.getDay()]}, ${hoje.getDate()}/${hoje.getMonth()+1}`+((ti>=0&&ti<DAYS.length)?` · Dia ${ti+1} de ${DAYS.length} do plano`:"")+". As missões mudam conforme o dia e o seu andamento.");
+  const box=el("section","wcard"); missionsToday().forEach(ms=>box.appendChild(missionRow(ms,false))); m.appendChild(box);
   m.appendChild(el("p","dzmeta","Use as gemas na Loja para congelar a sequência."));
 }
 
@@ -1422,14 +1566,12 @@ function renderPerfil(m){
   box.appendChild(g);
   const out=btn("ghost",auth0?"Sair da conta":"Entrar com Google",()=>$("authBtn").click()); box.appendChild(out);
   m.appendChild(box);
+  const lk=el("div","hub");
+  [["🔎","Novidades em pesquisa","Estudos recentes sobre listening em inglês.","novidades.html"],["🧭","Recursos de apps de idiomas","O que apps como Duolingo e Busuu oferecem e o que já temos.","recursos.html"],["🔗","Fontes em inglês","Sites de notícias, tecnologia e yoga do mundo.","fontes.html"]].forEach(([i,t,d,u])=>{
+    const a=el("a","hubcard slim"); a.href=u; a.append(el("span","hi",i),el("b",null,t),el("span","dzmeta",d)); lk.appendChild(a);
+  });
+  m.appendChild(lk);
   renderBadges(m);
-}
-function renderMais(m){
-  pageTitle(m,"Mais","Outras páginas e recursos.");
-  const list=[["🗂️","Versão clássica","O site como ele era antes da remodelação, com o mesmo progresso.","classico.html"],["🔎","Novidades em pesquisa","Estudos recentes sobre listening em inglês.","novidades.html"],["🧭","Recursos de apps de idiomas","O que Duolingo, Babbel, Busuu e outros oferecem, e o que já temos.","recursos.html"],["🎓","Aulas ao vivo: Lingoda","Aulas com professores, em grupo ou individuais.","https://www.lingoda.com"],["💬","Aulas ao vivo: italki","Professores particulares sob demanda.","https://www.italki.com"]];
-  const g=el("div","hub");
-  list.forEach(([i,t,d,u])=>{ const a=el("a","hubcard slim"); a.href=u; if(u.startsWith("http")){a.target="_blank"; a.rel="noopener";} a.append(el("span","hi",i),el("b",null,t),el("span","dzmeta",d)); g.appendChild(a); });
-  m.appendChild(g);
 }
 try{ const th=localStorage.getItem("hwlly-theme"); if(th&&th!=="auto") document.documentElement.setAttribute("data-theme",th); }catch(e){}
 

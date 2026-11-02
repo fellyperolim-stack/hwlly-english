@@ -229,7 +229,7 @@
         "duolingo"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Meta de 50 XP por dia, com anel de progresso no Início."
+      "ideia_para_o_site": "Meta de 50 XP por dia, com anel de progresso no Início, e missões que mudam conforme a data."
     },
     {
       "nome": "Conquistas e medalhas",
@@ -249,7 +249,7 @@
         "duolingo"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Aba Praticar > Histórias: três textos com frases que tocam ao clicar e perguntas."
+      "ideia_para_o_site": "Praticar > Histórias: 51 textos com frases que tocam ao clicar, vocabulário e perguntas."
     },
     {
       "nome": "Trilhas por tema",
@@ -259,8 +259,8 @@
         "babbel",
         "busuu"
       ],
-      "ja_temos": false,
-      "ideia_para_o_site": "Agrupar o plano por tema além de por semana."
+      "ja_temos": true,
+      "ideia_para_o_site": "Cada mês do plano tem um tema: notícias, tecnologia, yoga, viagem e inglês nativo."
     },
     {
       "nome": "Podcasts curtos",
@@ -359,6 +359,49 @@
       ],
       "ja_temos": true,
       "ideia_para_o_site": "Aba Início: meta do dia, XP da semana, mapa de dias e plano de 30 dias."
+    },
+    {
+      "nome": "Flashcards de palavras com revelar",
+      "categoria": "revisao",
+      "descricao": "Cartão mostra a palavra em inglês ou português e só revela a outra face ao toque.",
+      "apps": [
+        "anki",
+        "memrise"
+      ],
+      "ja_temos": true,
+      "ideia_para_o_site": "Praticar > Palavras: 255 palavras, direção inglês→português, português→inglês ou misto."
+    },
+    {
+      "nome": "Plano de longo prazo",
+      "categoria": "conteudo",
+      "descricao": "Cronograma organizado por semanas e temas.",
+      "apps": [
+        "babbel",
+        "busuu"
+      ],
+      "ja_temos": true,
+      "ideia_para_o_site": "Trilha de 6 meses (180 dias, 540 tarefas) gerada a partir de histórias, vocabulário e fontes."
+    },
+    {
+      "nome": "Missões que seguem o calendário",
+      "categoria": "motivacao",
+      "descricao": "Tarefas diárias que se ajustam ao dia e ao andamento do aluno.",
+      "apps": [
+        "duolingo"
+      ],
+      "ja_temos": true,
+      "ideia_para_o_site": "Missões usam a data: lição do dia, recuperar dia atrasado e rotação por dia da semana."
+    },
+    {
+      "nome": "Fontes de conteúdo real",
+      "categoria": "conteudo",
+      "descricao": "Indicação de sites e podcasts nativos por nível.",
+      "apps": [
+        "busuu",
+        "babbel"
+      ],
+      "ja_temos": true,
+      "ideia_para_o_site": "Página Fontes: 36 sites de notícias, tecnologia e yoga do mundo, com nível e como usar."
     }
   ]
 }

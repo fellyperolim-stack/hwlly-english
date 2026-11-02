@@ -1,14 +1,14 @@
 {
   "name": "HWLLY | ENGLISH",
   "short_name": "HWLLY",
-  "description": "Plano de listening em inglês de 30 dias, com ditado e progresso sincronizado.",
+  "description": "Plano de listening em inglês de 6 meses, com histórias, cards, ditado e progresso sincronizado.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F6F3EC",
-  "theme_color": "#FF5A36",
+  "background_color": "#0A0D18",
+  "theme_color": "#FF6B4A",
   "lang": "pt-BR",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
