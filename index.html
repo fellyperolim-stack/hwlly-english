@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#FF6B4A">
 <meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.json">
+<script src="data/i18n.js"></script>
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -503,6 +504,12 @@ body,.app,.content{background-color:transparent}
 .fc-say:hover{border-color:var(--teal)}
 @media (prefers-reduced-motion:reduce){.fc-in{transition:none}}
 @media (max-width:520px){.fc{aspect-ratio:4/3}.fc-face{padding:2.4rem 1.1rem 2rem}}
+
+/* ===== Seletor de idioma (bandeiras) ===== */
+.side-lang{margin:.8rem 0 .2rem}
+.tb-lang{margin-left:.4rem}
+.gate-lang{margin-top:1.2rem;display:flex;justify-content:center}
+@media (max-width:900px){.tb-lang{display:none}}
 </style>
 </head>
 <body class="locked">
@@ -512,6 +519,7 @@ body,.app,.content{background-color:transparent}
     <p>Entre com sua conta Google para ver e salvar seu progresso em qualquer aparelho.</p>
     <button id="gateBtn" class="primary" type="button">Entrar com Google</button>
     <p id="gateMsg"></p>
+    <div data-langsw class="gate-lang"></div>
   </div>
 </div>
 <div class="app">
@@ -529,6 +537,7 @@ body,.app,.content{background-color:transparent}
       <h1>HWLLY <span class="bar">|</span> ENGLISH</h1>
     </div>
     <p class="kicker">Listening em 6 meses</p>
+    <div data-langsw class="side-lang"></div>
   </header>
   <nav id="tabs" aria-label="Menu principal"></nav>
   <div class="side-foot">
@@ -543,7 +552,7 @@ body,.app,.content{background-color:transparent}
 </aside>
 <div id="scrim"></div>
 <section class="content">
-  <div class="topbar"><button id="menuBtn" type="button" aria-label="Abrir menu" aria-controls="side">☰</button><span class="tb-brand">HWLLY <b>|</b> ENGLISH</span><div class="statbar" id="statbar"></div></div>
+  <div class="topbar"><button id="menuBtn" type="button" aria-label="Abrir menu" aria-controls="side">☰</button><span class="tb-brand">HWLLY <b>|</b> ENGLISH</span><div class="statbar" id="statbar"></div><div data-langsw class="tb-lang"></div></div>
   <main id="main"></main>
   <aside id="right" class="right" aria-label="Resumo do dia"></aside>
 </section>
@@ -1686,7 +1695,17 @@ async function startCloudSync(){
     firebase.initializeApp(FIREBASE_CONFIG);
     const auth=firebase.auth(), fdb=firebase.firestore();
     const provider=new firebase.auth.GoogleAuthProvider();
-    const login=()=>auth.signInWithPopup(provider).catch(()=>{ $("gateMsg").textContent="Login não concluído. Tente de novo."; });
+    // Janela de login; se o aparelho bloquear (comum no app instalado do iPhone), tenta por redirecionamento.
+    const loginMsg=t=>{ const g=$("gateMsg"); if(g) g.textContent=t; setSync(t); };
+    const login=()=>auth.signInWithPopup(provider).catch(err=>{
+      const code=(err&&err.code)||"";
+      if(["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/web-storage-unsupported"].includes(code)){
+        return auth.signInWithRedirect(provider).catch(e2=>loginMsg("Login não concluído"+(e2&&e2.code?` (${e2.code})`:"")+"."));
+      }
+      if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request"){ loginMsg("Login cancelado. Toque em Entrar com Google para tentar de novo."); return; }
+      loginMsg("Login não concluído"+(code?` (${code})`:"")+". Tente de novo.");
+    });
+    auth.getRedirectResult().catch(e=>loginMsg("Login não concluído"+(e&&e.code?` (${e.code})`:"")+"."));
     $("gateBtn").onclick=login;
     const btn=$("authBtn"); btn.hidden=false;
     btn.onclick=()=>{ if(auth.currentUser) return auth.signOut(); return login(); };
@@ -1705,6 +1724,7 @@ async function startCloudSync(){
   }catch(e){ document.body.classList.remove("locked"); setSync("Salvo neste navegador"); }
 }
 startCloudSync();
+document.addEventListener("hwlly-lang",()=>{ try{ render(); }catch(e){} });
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
