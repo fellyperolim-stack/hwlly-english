@@ -1,6 +1,6 @@
 # HWLLY | ENGLISH
 
-Plano de listening em inglês de 6 meses, que fica mais difícil a cada mês (o Mês 1 tem 3 tarefas por dia e cada mês seguinte soma mais um desafio extra, chegando a 8 no Mês 6), com trilha de lições, 51 histórias com perguntas, cards de palavras (inglês e português) e frases com revisão espaçada, quiz, fala, modo áudio, ditado com voz sintetizada (sotaques americano, britânico e australiano), missões diárias e uma página de fontes de notícias, tecnologia e yoga em inglês.
+Plano de listening em inglês de 6 meses, que fica mais difícil a cada mês (o Mês 1 tem 3 tarefas por dia e cada mês seguinte soma mais um desafio extra, chegando a 8 no Mês 6), com trilha de lições, 51 histórias com perguntas, cards de palavras (inglês e português) e frases com revisão espaçada, quiz, fala, modo áudio, ditado com voz sintetizada (sotaques americano, britânico e australiano), missões diárias e uma página de fontes de notícias, tecnologia, cultura e esportes em inglês.
 
 ## Idioma
 

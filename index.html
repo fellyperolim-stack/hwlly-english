@@ -499,7 +499,7 @@ body,.app,.content{background-color:transparent}
 .fc-text{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,6vw,2.7rem);line-height:1.15;margin:0;overflow-wrap:anywhere}
 .fc-text.long{font-size:clamp(1.15rem,3.8vw,1.75rem);line-height:1.3}
 .fc-hint{position:absolute;bottom:20px;left:0;right:0;font-size:.78rem;color:var(--muted);letter-spacing:.04em}
-.fc-note{position:absolute;bottom:20px;left:26px;right:26px;font-size:.8rem;color:var(--muted)}
+.fc-note{position:absolute;bottom:42px;left:26px;right:26px;font-size:.8rem;color:var(--muted)}
 .fc-say{position:absolute;top:14px;right:16px;z-index:3;width:46px;height:46px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font-size:1.15rem}
 .fc-say:hover{border-color:var(--teal)}
 @media (prefers-reduced-motion:reduce){.fc-in{transition:none}}
@@ -510,6 +510,12 @@ body,.app,.content{background-color:transparent}
 .tb-lang{margin-left:.4rem}
 .gate-lang{margin-top:1.2rem;display:flex;justify-content:center}
 @media (max-width:900px){.tb-lang{display:none}}
+
+/* ===== Usuário e sair da conta ===== */
+.side-user{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.6rem}
+.side-user .who{margin:0;flex-basis:auto}
+.side-user #authBtn{margin-top:0;width:100%;border-radius:14px;min-height:44px;font-weight:800}
+.side-user #authBtn:hover{border-color:var(--danger)}
 </style>
 </head>
 <body class="locked">
@@ -540,13 +546,15 @@ body,.app,.content{background-color:transparent}
     <div data-langsw class="side-lang"></div>
   </header>
   <nav id="tabs" aria-label="Menu principal"></nav>
+  <div class="side-user">
+    <div id="who" class="who" hidden></div>
+    <button id="authBtn" class="ghost" hidden>Entrar com Google</button>
+  </div>
   <div class="side-foot">
     <div class="wave" id="wave" aria-label="Progresso diário"></div>
     <div class="stats">
       <span><strong id="stDone">0</strong> de <span id="stTot">540</span> tarefas feitas</span>
       <span id="sync">Carregando…</span>
-      <div id="who" class="who" hidden></div>
-      <button id="authBtn" class="ghost" hidden>Entrar com Google</button>
     </div>
   </div>
 </aside>
@@ -622,14 +630,14 @@ const MONTHS=[
  {name:"Mês 3",theme:"Tecnologia e Trabalho",
   pool:[P("The Verge","https://www.theverge.com"),P("Wired","https://www.wired.com"),P("TechCrunch","https://techcrunch.com"),P("BBC Innovation","https://www.bbc.com/innovation"),P("Engadget","https://www.engadget.com"),P("CNET","https://www.cnet.com")],
   weeks:[["Gadgets e Aplicativos","Aprenda a falar de produtos, telas, baterias e atualizações."],["Internet e Privacidade","Entenda notícias sobre dados, segurança e redes sociais."],["Trabalho Remoto e Reuniões","Vocabulário de reuniões, prazos, e-mails e equipes à distância."],["Startups e Carreira","Ouça sobre investimento, ideias de negócio e entrevistas de emprego."]]},
- {name:"Mês 4",theme:"Corpo, Yoga e Bem-estar",
-  pool:[P("Yoga With Adriene","https://yogawithadriene.com"),P("DoYogaWithMe","https://www.doyogawithme.com"),P("Insight Timer","https://insighttimer.com"),P("Headspace","https://www.headspace.com"),P("Calm","https://www.calm.com"),P("mindbodygreen","https://www.mindbodygreen.com")],
-  weeks:[["Respiração e Meditação","Siga instruções faladas devagar e aprenda o vocabulário do corpo."],["Aulas de Yoga em Inglês","Faça aulas inteiras em inglês, acompanhando só pelo áudio."],["Sono, Rotina e Saúde","Entenda conselhos sobre descanso, hábitos e energia."],["Alimentação e Hábitos","Vocabulário de comida, receitas e escolhas saudáveis."]]},
+ {name:"Mês 4",theme:"Cultura e Esportes",
+  pool:[P("Variety","https://variety.com"),P("Rolling Stone","https://www.rollingstone.com"),P("Billboard","https://www.billboard.com"),P("Empire","https://www.empireonline.com"),P("BBC Sport","https://www.bbc.com/sport"),P("ESPN","https://www.espn.com")],
+  weeks:[["Cinema e Séries","Entenda críticas, trailers e conversas sobre filmes e séries."],["Música e Shows","Ouça entrevistas com artistas e aprenda o vocabulário de música."],["Livros, Arte e Teatro","Acompanhe resenhas e entrevistas sobre livros, exposições e peças."],["Esportes e Lazer","Aprenda o vocabulário de jogos, esportes e hobbies."]]},
  {name:"Mês 5",theme:"Viagem e Cultura",
   pool:[P("Al Jazeera English","https://www.aljazeera.com"),P("RTÉ News","https://www.rte.ie/news"),P("The Straits Times","https://www.straitstimes.com"),P("The Japan Times","https://www.japantimes.co.jp"),P("NZ Herald","https://www.nzherald.co.nz"),P("South China Morning Post","https://www.scmp.com")],
   weeks:[["Aeroportos e Hotéis","Situações de viagem: check-in, reservas, atrasos e problemas."],["Cidades e Transporte","Peça e entenda indicações, horários e preços."],["Comida e Festivais","Restaurantes, receitas, feiras e eventos culturais."],["Arte, Música e História","Ouça sobre museus, artistas e acontecimentos do passado."]]},
  {name:"Mês 6",theme:"Fluência e Inglês Nativo",
-  pool:[P("NPR","https://www.npr.org"),P("The Guardian","https://www.theguardian.com"),P("BBC News","https://www.bbc.com/news"),P("Ars Technica","https://arstechnica.com"),P("MIT Technology Review","https://www.technologyreview.com"),P("Yoga Journal","https://www.yogajournal.com")],
+  pool:[P("NPR","https://www.npr.org"),P("The Guardian","https://www.theguardian.com"),P("BBC News","https://www.bbc.com/news"),P("Ars Technica","https://arstechnica.com"),P("MIT Technology Review","https://www.technologyreview.com"),P("Variety","https://variety.com")],
   weeks:[["Podcasts Longos","Acompanhe episódios inteiros com menos pausas."],["Conversas Rápidas e Humor","Entenda piadas, gírias e interrupções."],["Entrevistas e Debates","Siga argumentos e opiniões de várias pessoas."],["Consolidação Geral","Revise o que mais errou e feche o ciclo de 6 meses."]]}
 ];
 const MODES=[
@@ -1068,25 +1076,33 @@ function previewIvl(id,q){const n=nextState(cardState(id),q); return n.ivl<=1?"1
 function sayEn(text){try{speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; speechSynthesis.speak(u);}catch(e){}}
 
 const CARD_FILTERS=[["vocab","Palavras"],["frases","Frases"],["erros","Erros do ditado"],["meus","Meus cards"],[null,"Tudo"]];
-// Cartão de estudo: frente e verso, com giro 3D. Toque (ou Enter/Espaço) para virar.
+// Cartão de estudo: frente e verso, com giro 3D. Toque (ou Enter/Espaço) para virar e, de novo, para voltar:
+// dá para conferir a frase quantas vezes quiser antes de avaliar.
 function flashCard(o){
-  const wrap=el("div","fcwrap"), fc=el("div","fc"+(o.shown?" flipped":"")), inner=el("div","fc-in");
-  inner.tabIndex=0; inner.setAttribute("role","button"); inner.setAttribute("aria-label","Cartão. Toque para virar e ver a resposta.");
+  const wrap=el("div","fcwrap"), fc=el("div","fc"+(cs.flipped?" flipped":"")), inner=el("div","fc-in");
+  inner.tabIndex=0; inner.setAttribute("role","button");
+  const f=el("div","fc-face front"), b=el("div","fc-face back");
   const long=Math.max(o.frontText.length,o.backText.length)>34, tc="fc-text"+(long?" long":"");
-  const f=el("div","fc-face front"); f.append(el("span","fc-label",o.frontLabel),el("p",tc,o.frontText),el("span","fc-hint","Toque para virar"));
-  const b=el("div","fc-face back"); b.append(el("span","fc-label",o.backLabel),el("p",tc,o.backText)); if(o.note) b.appendChild(el("span","fc-note",o.note));
+  f.append(el("span","fc-label",o.frontLabel),el("p",tc,o.frontText),el("span","fc-hint","Toque para virar"));
+  b.append(el("span","fc-label",o.backLabel),el("p",tc,o.backText)); if(o.note) b.appendChild(el("span","fc-note",o.note));
+  b.appendChild(el("span","fc-hint","Toque para voltar"));
   inner.append(f,b); fc.appendChild(inner); wrap.appendChild(fc);
-  let flipped=!!o.shown, say=null;
-  const flip=()=>{ if(flipped) return; flipped=true; fc.classList.add("flipped"); inner.setAttribute("aria-label","Cartão virado: "+o.backText); cs.shown=true; if(say) say.hidden=false; if(o.onFlip) o.onFlip(); };
+  let side=!!cs.flipped, ever=!!cs.shown, say=null;
+  const label=()=>inner.setAttribute("aria-label",side?("Cartão virado: "+o.backText.replace(/[.!?…]+$/,"")+". Toque para voltar."):"Cartão. Toque para virar e ver a resposta.");
+  label();
+  const flip=()=>{
+    side=!side; cs.flipped=side; fc.classList.toggle("flipped",side); label();
+    if(!ever){ ever=true; cs.shown=true; if(say) say.hidden=false; if(o.onFirstFlip) o.onFirstFlip(); }
+  };
   inner.onclick=flip; inner.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault(); flip();} };
-  if(o.say){ say=btn("fc-say","🔊",e=>{e.stopPropagation(); sayEn(o.say);}); say.setAttribute("aria-label","Ouvir em inglês"); say.hidden=!(o.sayFront||o.shown); wrap.appendChild(say); }
+  if(o.say){ say=btn("fc-say","🔊",e=>{e.stopPropagation(); sayEn(o.say);}); say.setAttribute("aria-label","Ouvir em inglês"); say.hidden=!(o.sayFront||ever); wrap.appendChild(say); }
   return {wrap,flip};
 }
 function rateRow(c){
   const row=el("div","rate");
   [["Errei",0],["Difícil",1],["Bom",2],["Fácil",3]].forEach(([l,q])=>{
     const b=el("button", q===0?"ghost":"primary", `${l} · ${previewIvl(c.id,q)}`);
-    b.onclick=()=>{rateCard(c.id,q); cs.done++; cs.i++; cs.shown=false; renderMain();};
+    b.onclick=()=>{rateCard(c.id,q); cs.done++; cs.i++; cs.shown=false; cs.flipped=false; renderMain();};
     row.appendChild(b);
   });
   return row;
@@ -1103,7 +1119,7 @@ function renderCards(m){
   m.appendChild(fb);
   if(cardFilter!=="meus"){
     const db=el("div","bar2"); db.setAttribute("role","group"); db.setAttribute("aria-label","Direção");
-    [["en","Inglês → Português"],["pt","Português → Inglês"],["mix","Misto"]].forEach(([k,l])=>{ const b=btn("chip",l,()=>{state.vdir=k; persist(); cs.shown=false; renderMain();}); b.setAttribute("aria-pressed",vdirNow()===k); db.appendChild(b); });
+    [["en","Inglês → Português"],["pt","Português → Inglês"],["mix","Misto"]].forEach(([k,l])=>{ const b=btn("chip",l,()=>{state.vdir=k; persist(); cs.shown=false; cs.flipped=false; renderMain();}); b.setAttribute("aria-pressed",vdirNow()===k); db.appendChild(b); });
     m.appendChild(db);
   }
   const box=el("section","card-box");
@@ -1128,8 +1144,8 @@ function renderCards(m){
       fo={frontLabel:"Como soa",frontText:c.front||"Ouça e lembre a frase",backLabel:"Frase",backText:c.back,say:c.back,sayFront:true};
     }
     const rate=rateRow(c); rate.hidden=!cs.shown;
-    const revealBtn=btn("primary","Revelar",()=>card.flip()); revealBtn.hidden=cs.shown;
-    const card=flashCard(Object.assign(fo,{shown:cs.shown,onFlip:()=>{rate.hidden=false; revealBtn.hidden=true;}}));
+    const revealBtn=btn("primary",cs.shown?"↻ Virar de novo":"Revelar",()=>card.flip());
+    const card=flashCard(Object.assign(fo,{onFirstFlip:()=>{rate.hidden=false; revealBtn.textContent="↻ Virar de novo";}}));
     box.append(card.wrap,revealBtn,rate);
   }
   m.appendChild(box);
@@ -1633,7 +1649,7 @@ function renderPerfil(m){
   const out=btn("ghost",auth0?"Sair da conta":"Entrar com Google",()=>$("authBtn").click()); box.appendChild(out);
   m.appendChild(box);
   const lk=el("div","hub");
-  [["🔎","Novidades em pesquisa","Estudos recentes sobre listening em inglês.","novidades.html"],["🧭","Recursos de apps de idiomas","O que apps como Duolingo e Busuu oferecem e o que já temos.","recursos.html"],["🔗","Fontes em inglês","Sites de notícias, tecnologia e yoga do mundo.","fontes.html"]].forEach(([i,t,d,u])=>{
+  [["🔎","Novidades em pesquisa","Estudos recentes sobre listening em inglês.","novidades.html"],["🧭","Recursos de apps de idiomas","O que apps como Duolingo e Busuu oferecem e o que já temos.","recursos.html"],["🔗","Fontes em inglês","Sites de notícias, tecnologia, cultura e esportes do mundo.","fontes.html"]].forEach(([i,t,d,u])=>{
     const a=el("a","hubcard slim"); a.href=u; a.append(el("span","hi",i),el("b",null,t),el("span","dzmeta",d)); lk.appendChild(a);
   });
   m.appendChild(lk);
@@ -1708,14 +1724,26 @@ async function startCloudSync(){
     auth.getRedirectResult().catch(e=>loginMsg("Login não concluído"+(e&&e.code?` (${e.code})`:"")+"."));
     $("gateBtn").onclick=login;
     const btn=$("authBtn"); btn.hidden=false;
-    btn.onclick=()=>{ if(auth.currentUser) return auth.signOut(); return login(); };
+    // Sair da conta: limpa o progresso guardado neste aparelho para que outra pessoa que entre
+    // depois não receba (nem envie para a própria conta) os dados de quem saiu.
+    const signOutNow=()=>{
+      if(!confirm(I18N.t("Sair da conta? Seu progresso fica salvo na nuvem e volta quando você entrar de novo."))) return;
+      auth.signOut().then(()=>{
+        try{localStorage.removeItem(LS);}catch(e){}
+        state={done:{},notes:{},reports:{}}; ref=null; auth0=null;
+        const w=$("who"); if(w){ w.hidden=true; w.textContent=""; }
+        cs={queue:null,i:0,shown:false,done:0}; qz=null;
+        go(11);
+      }).catch(()=>setSync("Não foi possível sair. Tente de novo."));
+    };
+    btn.onclick=()=>{ if(auth.currentUser) return signOutNow(); return login(); };
     auth.onAuthStateChanged(async u=>{
       if(!u){
-        ref=null; btn.textContent="Entrar com Google";
+        ref=null; auth0=null; btn.textContent="Entrar com Google"; { const w=$("who"); if(w){ w.hidden=true; w.textContent=""; } }
         document.body.classList.add("locked"); setSync("Entre para salvar seu progresso");
         return;
       }
-      auth0=u; document.body.classList.remove("locked"); btn.textContent="Sair";
+      auth0=u; document.body.classList.remove("locked"); btn.textContent="Sair da conta";
       const who=$("who"); if(who){ who.hidden=false; who.textContent=""; const img=document.createElement("img"); img.alt=""; if(u.photoURL) img.src=u.photoURL; const nm=document.createElement("span"); nm.textContent="Progresso de "+(u.displayName||u.email||"sua conta"); who.append(img,nm); }
       render();
       try{ await attachRef(fdb.collection("users").doc(u.uid).collection("app").doc("estado")); }
