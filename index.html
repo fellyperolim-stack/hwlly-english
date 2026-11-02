@@ -1466,7 +1466,7 @@ async function attachRef(doc){
   const snap=await ref.get();
   if(snap.exists){
     const d=snap.data()||{};
-    state=Object.assign({},d,{done:d.done||{}});
+    state=Object.assign({done:{},notes:{},reports:{}},d);
     try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}
     render(); setSync("Salvo na sua conta");
   } else {
