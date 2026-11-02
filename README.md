@@ -1,6 +1,6 @@
 # HWLLY | ENGLISH
 
-Plano de listening em inglês de 30 dias (30 minutos por dia), com calendário de tarefas, links de vídeos e leituras, e um treino de ditado com voz sintetizada (sotaques americano, britânico e australiano).
+Plano de listening em inglês de 6 meses (30 minutos por dia), com trilha de lições, 51 histórias com perguntas, cards de palavras (inglês e português) e frases com revisão espaçada, quiz, fala, modo áudio, ditado com voz sintetizada (sotaques americano, britânico e australiano), missões diárias e uma página de fontes de notícias, tecnologia e yoga em inglês.
 
 ## Como usar
 
