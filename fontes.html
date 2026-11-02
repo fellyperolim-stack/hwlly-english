@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#FF6B4A">
 <meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.json">
+<script src="data/i18n.js"></script>
 <title>Fontes em inglês | HWLLY | ENGLISH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +23,8 @@ a{color:var(--teal)}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .wrap{max-width:68rem;margin:0 auto;padding:1.2rem 1rem 4rem}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.toprow .back{margin-bottom:0}
 .back{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:.85rem;margin-bottom:1rem}
 h1{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800}
 .lead{color:var(--muted);max-width:44rem;margin:.5rem 0 1.4rem}
@@ -49,7 +52,7 @@ input[type=search]{width:100%;max-width:26rem;font:inherit;color:var(--ink);back
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="index.html">← Voltar ao HWLLY</a>
+  <div class="toprow"><a class="back" href="index.html">← Voltar ao HWLLY</a><div data-langsw></div></div>
   <h1>Fontes em inglês para ler e ouvir</h1>
   <p class="lead">Sites de notícias, tecnologia e yoga do mundo inteiro, escolhidos para treinar listening e leitura com sotaques e assuntos diferentes. Comece pelos de nível mais baixo e suba aos poucos.</p>
 

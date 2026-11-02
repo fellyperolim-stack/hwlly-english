@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FF5A36">
 <link rel="manifest" href="manifest.json">
+<script src="data/i18n.js"></script>
 <title>Recursos de apps de idiomas | HWLLY | ENGLISH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +21,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .wrap{max-width:60rem;margin:0 auto;padding:1rem .9rem 3rem}
 nav a{text-decoration:none;font-weight:700}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.toprow .back{margin-bottom:0}
 h1{font-size:clamp(1.8rem,6vw,2.6rem);margin:.6rem 0 .3rem}
 .lead{color:var(--muted);margin:0 0 1rem}
 .aviso{font-size:.9rem;color:var(--muted);border-left:3px solid var(--teal);padding:.4rem .8rem;margin:0 0 1.2rem;border-radius:0 8px 8px 0;background:var(--surface)}
@@ -40,7 +43,7 @@ h1{font-size:clamp(1.8rem,6vw,2.6rem);margin:.6rem 0 .3rem}
 </head>
 <body>
 <div class="wrap">
-  <nav><a href="index.html">← Voltar ao plano</a></nav>
+  <div class="toprow"><nav><a href="index.html">← Voltar ao plano</a></nav><div data-langsw></div></div>
   <h1>Recursos de apps de idiomas</h1>
   <p class="lead">Funções de Duolingo, Babbel, Busuu, Memrise, Speak, Pimsleur, Lingoda e Anki, comparadas com o que já existe no HWLLY.</p>
   <p class="aviso" id="aviso">Carregando o banco de recursos…</p>

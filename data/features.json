@@ -89,7 +89,7 @@
         "busuu"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Aba Aprender: trilha de 30 dias em zigue-zague, sem vidas e sem bloqueios."
+      "ideia_para_o_site": "Aba Aprender: trilha de 6 meses em zigue-zague, sem vidas e sem bloqueios."
     },
     {
       "nome": "Exercícios variados por lição",
@@ -198,7 +198,7 @@
         "duolingo"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Já existe na aba Cards."
+      "ideia_para_o_site": "Já existe: aparece na barra do topo e no Início."
     },
     {
       "nome": "Congelar a sequência",
@@ -219,7 +219,7 @@
         "memrise"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Já existe na aba Cards (XP)."
+      "ideia_para_o_site": "Já existe: XP na barra do topo e meta diária no Início."
     },
     {
       "nome": "Metas diárias",
@@ -239,7 +239,7 @@
         "duolingo"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Perfil > Conquistas: 18 medalhas por marcos."
+      "ideia_para_o_site": "Perfil > Conquistas: mais de 20 medalhas por marcos."
     },
     {
       "nome": "Histórias interativas",
@@ -358,7 +358,7 @@
         "babbel"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Aba Início: meta do dia, XP da semana, mapa de dias e plano de 30 dias."
+      "ideia_para_o_site": "Aba Início: meta do dia, XP da semana, mapa de dias e plano de 6 meses."
     },
     {
       "nome": "Flashcards de palavras com revelar",
@@ -380,7 +380,7 @@
         "busuu"
       ],
       "ja_temos": true,
-      "ideia_para_o_site": "Trilha de 6 meses (180 dias, 540 tarefas) gerada a partir de histórias, vocabulário e fontes."
+      "ideia_para_o_site": "Trilha de 6 meses (180 dias, 990 tarefas) gerada a partir de histórias, vocabulário e fontes."
     },
     {
       "nome": "Missões que seguem o calendário",
@@ -402,6 +402,29 @@
       ],
       "ja_temos": true,
       "ideia_para_o_site": "Página Fontes: 36 sites de notícias, tecnologia e yoga do mundo, com nível e como usar."
+    },
+    {
+      "nome": "Dificuldade crescente",
+      "categoria": "conteudo",
+      "descricao": "O conteúdo e as metas ficam mais exigentes conforme o aluno avança.",
+      "apps": [
+        "babbel",
+        "busuu"
+      ],
+      "ja_temos": true,
+      "ideia_para_o_site": "Cada mês traz mais um desafio extra por dia, e as histórias seguem de A2 a B2."
+    },
+    {
+      "nome": "Página em dois idiomas",
+      "categoria": "offline",
+      "descricao": "Interface disponível em mais de um idioma, com troca rápida.",
+      "apps": [
+        "duolingo",
+        "babbel",
+        "busuu"
+      ],
+      "ja_temos": true,
+      "ideia_para_o_site": "Bandeiras para alternar entre português (Brasil) e inglês (EUA) em todas as páginas."
     }
   ]
 }
