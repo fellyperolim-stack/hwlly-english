@@ -727,11 +727,17 @@ const $=id=>document.getElementById(id);
 function todayIndex(){const t=new Date(); t.setHours(0,0,0,0); const s=new Date(START); return Math.round((t-s)/864e5);}
 let curWeek=11, pw=0; // curWeek: tela atual (20 = plano da semana pw)
 
+// Salvamento: grava no aparelho e na nuvem. Enquanto a nuvem não confirmar, o aparelho guarda a marca
+// "pendente"; assim, se o app fechar offline, o progresso é reenviado (e unido ao da nuvem) na próxima vez.
 function persist(){
-  try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}
+  state.ts=Date.now();
+  try{localStorage.setItem(LS,JSON.stringify(state)); localStorage.setItem(LS+"-dirty","1");}catch(e){}
   if(!ref) return;
   const snap=JSON.parse(JSON.stringify(state));
-  saving=saving.then(()=>ref.set(snap)).then(()=>setSync("Salvo na sua conta")).catch(e=>setSync("Não foi possível salvar na conta; salvo neste navegador"));
+  saving=saving.then(()=>ref.set(snap)).then(()=>{
+    if(snap.ts===state.ts){ try{localStorage.removeItem(LS+"-dirty");}catch(e){} }
+    setSync("Salvo na sua conta");
+  }).catch(e=>setSync("Não foi possível salvar na conta; salvo neste navegador"));
 }
 function setSync(t){$("sync").textContent=t;}
 
@@ -1698,16 +1704,42 @@ const FIREBASE_CONFIG = {
   appId: "1:858571422952:web:f3347aab0c366c3c0d1d5d"
 };
 
-async function attachRef(doc){
+// Junta o progresso do aparelho (feito offline) com o da nuvem, sem perder nada de nenhum dos dois.
+function mergeStates(r,l){
+  const newer=(l.ts||0)>=(r.ts||0)?l:r, older=newer===l?r:l;
+  const out=Object.assign({},older,newer);
+  out.done=Object.assign({},r.done,l.done);
+  out.notes=Object.assign({},r.notes,l.notes);
+  out.reports=Object.assign({},r.reports,l.reports);
+  const maxMap=(a,b)=>{ const o=Object.assign({},a); Object.keys(b||{}).forEach(k=>{ o[k]=Math.max(o[k]||0,b[k]||0); }); return o; };
+  out.dict=maxMap(r.dict,l.dict); out.stats=maxMap(r.stats,l.stats); out.xpLog=maxMap(r.xpLog,l.xpLog); out.stories=maxMap(r.stories,l.stories);
+  out.xp=Math.max(r.xp||0,l.xp||0);
+  const cards=Object.assign({},r.cards);
+  Object.keys(l.cards||{}).forEach(id=>{ const a=cards[id], b=l.cards[id]; if(!a||(b.reps||0)>(a.reps||0)||((b.reps||0)===(a.reps||0)&&(b.due||0)>(a.due||0))) cards[id]=b; });
+  out.cards=cards;
+  const byId={}; (r.custom||[]).concat(l.custom||[]).forEach(c=>{ byId[c.id]=c; }); out.custom=Object.values(byId);
+  const sr=r.streak||{last:-1,count:0}, sl=l.streak||{last:-1,count:0};
+  out.streak=(sl.last>sr.last||(sl.last===sr.last&&sl.count>=sr.count))?sl:sr;
+  return out;
+}
+async function attachRef(doc,uid){
+  const snap=await doc.get();   // se a leitura falhar, "ref" continua vazio e nada é gravado por cima da nuvem
   ref=doc;
-  const snap=await ref.get();
+  let dirty=false; try{ dirty=localStorage.getItem(LS+"-dirty")==="1"; }catch(e){}
+  const mine=!state.owner||state.owner===uid;          // o progresso do aparelho é desta conta (ou ainda não tem dono)
+  const pending=dirty&&mine&&!!state.ts;                // há progresso local que a nuvem ainda não recebeu
   if(snap.exists){
     const d=snap.data()||{};
-    state=Object.assign({done:{},notes:{},reports:{}},d);
-    try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}
+    state=pending?mergeStates(d,state):Object.assign({done:{},notes:{},reports:{}},d);
+  } else if(!mine){
+    state={done:{},notes:{},reports:{}};                 // dados de outra conta não são enviados para esta
+  }
+  state.owner=uid;
+  if(snap.exists&&!pending){
+    try{localStorage.setItem(LS,JSON.stringify(state)); localStorage.removeItem(LS+"-dirty");}catch(e){}
     render(); setSync("Salvo na sua conta");
   } else {
-    persist(); // primeira vez nesta conta: envia o progresso deste aparelho
+    persist(); render();   // primeira vez nesta conta, ou união feita: envia o resultado
   }
 }
 
@@ -1716,7 +1748,7 @@ async function startCloudSync(){
     if(window.claude&&window.claude.use){
       const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
       const id=db&&user&&await user.id();
-      if(id){ document.body.classList.remove("locked"); await attachRef(db.collection("data/users/"+id).doc("estado")); return; }
+      if(id){ document.body.classList.remove("locked"); await attachRef(db.collection("data/users/"+id).doc("estado"),id); return; }
     }
   }catch(e){}
   if(!FIREBASE_CONFIG||!window.firebase){ document.body.classList.remove("locked"); setSync("Salvo neste navegador"); return; }
@@ -1737,13 +1769,20 @@ async function startCloudSync(){
     auth.getRedirectResult().catch(e=>loginMsg("Login não concluído"+(e&&e.code?` (${e.code})`:"")+"."));
     $("gateBtn").onclick=login;
     const btn=$("authBtn"); btn.hidden=false;
+    let pendingAttach=null;
+    const retry=()=>{ if(pendingAttach){ const f=pendingAttach; pendingAttach=null; f(); } };
+    window.addEventListener("online",retry);
+    const attachFor=async u=>{
+      try{ await attachRef(fdb.collection("users").doc(u.uid).collection("app").doc("estado"),u.uid); }
+      catch(e){ setSync("Não foi possível carregar sua conta; salvo neste navegador"); pendingAttach=()=>attachFor(u); setTimeout(retry,15000); }
+    };
     // Sair da conta: limpa o progresso guardado neste aparelho para que outra pessoa que entre
     // depois não receba (nem envie para a própria conta) os dados de quem saiu.
     const signOutNow=()=>{
       if(!confirm(I18N.t("Sair da conta? Seu progresso fica salvo na nuvem e volta quando você entrar de novo."))) return;
       auth.signOut().then(()=>{
-        try{localStorage.removeItem(LS);}catch(e){}
-        state={done:{},notes:{},reports:{}}; ref=null; auth0=null;
+        try{localStorage.removeItem(LS); localStorage.removeItem(LS+"-dirty");}catch(e){}
+        state={done:{},notes:{},reports:{}}; ref=null; auth0=null; pendingAttach=null;
         const w=$("who"); if(w){ w.hidden=true; w.textContent=""; }
         cs={queue:null,i:0,shown:false,done:0}; qz=null;
         go(11);
@@ -1752,15 +1791,14 @@ async function startCloudSync(){
     btn.onclick=()=>{ if(auth.currentUser) return signOutNow(); return login(); };
     auth.onAuthStateChanged(async u=>{
       if(!u){
-        ref=null; auth0=null; btn.textContent="Entrar com Google"; { const w=$("who"); if(w){ w.hidden=true; w.textContent=""; } }
+        ref=null; auth0=null; pendingAttach=null; btn.textContent="Entrar com Google"; { const w=$("who"); if(w){ w.hidden=true; w.textContent=""; } }
         document.body.classList.add("locked"); setSync("Entre para salvar seu progresso");
         return;
       }
       auth0=u; document.body.classList.remove("locked"); btn.textContent="Sair da conta";
       const who=$("who"); if(who){ who.hidden=false; who.textContent=""; const img=document.createElement("img"); img.alt=""; if(u.photoURL) img.src=u.photoURL; const nm=document.createElement("span"); nm.textContent="Progresso de "+(u.displayName||u.email||"sua conta"); who.append(img,nm); }
       render();
-      try{ await attachRef(fdb.collection("users").doc(u.uid).collection("app").doc("estado")); }
-      catch(e){ setSync("Não foi possível carregar sua conta; salvo neste navegador"); }
+      await attachFor(u);
     });
   }catch(e){ document.body.classList.remove("locked"); setSync("Salvo neste navegador"); }
 }
