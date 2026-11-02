@@ -384,6 +384,7 @@ var D={
 "Inversão na gramática": "Inversion in grammar",
 "Inversão: Never have I…, Not only did she… Escreva # frases.": "Inversion: Never have I…, Not only did she… Write # sentences.",
 "Início": "Home",
+"Ir para a missão": "Go to the mission",
 "Irlanda": "Ireland",
 "Item que protege a sequência se você faltar um dia.": "An item that protects your streak if you miss a day.",
 "Itens revisados em intervalos crescentes conforme você acerta.": "Items reviewed at growing intervals as you get them right.",
