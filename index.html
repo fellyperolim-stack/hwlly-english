@@ -96,6 +96,13 @@ nav button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-co
 .primary:disabled{opacity:.5;cursor:default}
 .ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:.6rem 1rem}
 [hidden]{display:none!important}
+#gate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg);z-index:10}
+body.locked #gate{display:flex}
+body.locked .wrap{display:none}
+#gate .card{max-width:24rem;width:100%;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:2rem 1.5rem}
+#gate h1{margin:0 0 .5rem;font-size:1.4rem}
+#gate p{color:var(--muted);margin:0 0 1.5rem}
+#gate #gateMsg{min-height:1.4em;font-size:.95rem;margin:1rem 0 0}
 .rtext{white-space:pre-wrap;margin-top:1rem;line-height:1.65}
 .rmeta{color:var(--muted);font-size:.85rem;margin-top:.6rem}
 .err{color:var(--danger);font-size:.95rem;margin-top:.6rem}
@@ -137,7 +144,15 @@ textarea{min-height:8rem;resize:vertical}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="gate">
+  <div class="card">
+    <h1>HWLLY <span class="bar">|</span> ENGLISH</h1>
+    <p>Entre com sua conta Google para ver e salvar seu progresso em qualquer aparelho.</p>
+    <button id="gateBtn" class="primary" type="button">Entrar com Google</button>
+    <p id="gateMsg"></p>
+  </div>
+</div>
 <div class="wrap">
   <header>
     <div class="brand">
@@ -476,26 +491,30 @@ async function startCloudSync(){
     if(window.claude&&window.claude.use){
       const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
       const id=db&&user&&await user.id();
-      if(id){ await attachRef(db.collection("data/users/"+id).doc("estado")); return; }
+      if(id){ document.body.classList.remove("locked"); await attachRef(db.collection("data/users/"+id).doc("estado")); return; }
     }
   }catch(e){}
-  if(!FIREBASE_CONFIG||!window.firebase){ setSync("Salvo neste navegador"); return; }
+  if(!FIREBASE_CONFIG||!window.firebase){ document.body.classList.remove("locked"); setSync("Salvo neste navegador"); return; }
   try{
     firebase.initializeApp(FIREBASE_CONFIG);
     const auth=firebase.auth(), fdb=firebase.firestore();
+    const provider=new firebase.auth.GoogleAuthProvider();
+    const login=()=>auth.signInWithPopup(provider).catch(()=>{ $("gateMsg").textContent="Login não concluído. Tente de novo."; });
+    $("gateBtn").onclick=login;
     const btn=$("authBtn"); btn.hidden=false;
-    btn.onclick=()=>{
-      if(auth.currentUser) return auth.signOut();
-      return auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-        .catch(()=>setSync("Login cancelado. Salvo neste navegador"));
-    };
+    btn.onclick=()=>{ if(auth.currentUser) return auth.signOut(); return login(); };
     auth.onAuthStateChanged(async u=>{
-      if(!u){ ref=null; btn.textContent="Entrar com Google"; setSync("Salvo neste navegador"); return; }
-      btn.textContent="Sair";
+      if(!u){
+        ref=null; btn.textContent="Entrar com Google";
+        document.body.classList.add("locked"); setSync("Entre para salvar seu progresso");
+        return;
+      }
+      document.body.classList.remove("locked"); btn.textContent="Sair";
+      render();
       try{ await attachRef(fdb.collection("users").doc(u.uid).collection("app").doc("estado")); }
       catch(e){ setSync("Não foi possível carregar sua conta; salvo neste navegador"); }
     });
-  }catch(e){ setSync("Salvo neste navegador"); }
+  }catch(e){ document.body.classList.remove("locked"); setSync("Salvo neste navegador"); }
 }
 startCloudSync();
 </script>
