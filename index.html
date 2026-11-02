@@ -478,6 +478,31 @@ body,.app,.content{background-color:transparent}
 .task.challenge{border-left:3px solid var(--amber);padding-left:.7rem;margin-left:-.2rem}
 .task.challenge .ttext b{color:var(--amber)}
 .tag.hard{background:var(--amber-soft);color:var(--amber);margin-left:.4rem}
+
+/* ===== Cartão de estudo (frente e verso) ===== */
+.card-box.deck{align-items:center}
+.card-box.deck .dzmeta{align-self:flex-start}
+.fcwrap{position:relative;width:min(100%,540px);margin:.4rem auto 1.4rem}
+.fcwrap::before,.fcwrap::after{content:"";position:absolute;inset:0;border-radius:28px;background:var(--surface-2);border:2px solid var(--line);z-index:0}
+.fcwrap::before{transform:translate(12px,12px) rotate(2.2deg);opacity:.7}
+.fcwrap::after{transform:translate(6px,6px) rotate(1.1deg)}
+.fc{position:relative;z-index:1;perspective:1400px;aspect-ratio:3/2;min-height:230px}
+.fc-in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.8,.2,1);cursor:pointer;border-radius:28px}
+.fc-in:focus-visible{outline:3px solid var(--teal);outline-offset:5px}
+.fc.flipped .fc-in{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:28px;border:2px solid var(--line);padding:2.2rem 1.6rem 1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.5rem;box-shadow:0 30px 60px -32px rgba(0,0,0,.7);overflow:hidden}
+.fc-face.front{background:linear-gradient(160deg,var(--surface),var(--surface-2))}
+.fc-face.back{transform:rotateY(180deg);background:linear-gradient(160deg,color-mix(in srgb,var(--teal) 26%,var(--surface)),color-mix(in srgb,var(--amber) 22%,var(--surface)));border-color:var(--teal)}
+.fc-face::before{content:"";position:absolute;inset:10px;border:1px dashed color-mix(in srgb,var(--ink) 18%,transparent);border-radius:20px;pointer-events:none}
+.fc-label{position:absolute;top:20px;left:26px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.fc-text{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:clamp(1.6rem,6vw,2.7rem);line-height:1.15;margin:0;overflow-wrap:anywhere}
+.fc-text.long{font-size:clamp(1.15rem,3.8vw,1.75rem);line-height:1.3}
+.fc-hint{position:absolute;bottom:20px;left:0;right:0;font-size:.78rem;color:var(--muted);letter-spacing:.04em}
+.fc-note{position:absolute;bottom:20px;left:26px;right:26px;font-size:.8rem;color:var(--muted)}
+.fc-say{position:absolute;top:14px;right:16px;z-index:3;width:46px;height:46px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font-size:1.15rem}
+.fc-say:hover{border-color:var(--teal)}
+@media (prefers-reduced-motion:reduce){.fc-in{transition:none}}
+@media (max-width:520px){.fc{aspect-ratio:4/3}.fc-face{padding:2.4rem 1.1rem 2rem}}
 </style>
 </head>
 <body class="locked">
@@ -531,6 +556,7 @@ body,.app,.content{background-color:transparent}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="data/deck.js"></script>
 <script src="data/stories.js"></script>
+<script src="data/frases_pt.js"></script>
 <script>
 const START = new Date(2026, 9, 5); // ajustado: Dia 14 = 18/out
 const WD = ["dom","seg","ter","qua","qui","sex","sáb"];
@@ -964,8 +990,9 @@ let cs={queue:null,i:0,shown:false,done:0};
 const DAY=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*60000)/864e5); // dia local
 function allCards(){
   const out=[];
-  SETS.forEach((st,si)=>st.items.forEach((it,i)=>out.push({id:`c${si}i${i}`,front:it.s,back:it.t,set:st.name})));
-  (window.DECK||[]).forEach((d,i)=>out.push({id:`d${i}`,front:d[1],back:d[0],set:d[2]}));
+  const PT=t=>(window.PT_FRASES||{})[t];
+  SETS.forEach((st,si)=>st.items.forEach((it,i)=>out.push({id:`c${si}i${i}`,front:it.s,back:it.t,pt:PT(it.t),set:st.name})));
+  (window.DECK||[]).forEach((d,i)=>out.push({id:`d${i}`,front:d[1],back:d[0],pt:PT(d[0]),set:d[2]}));
   (window.STORIES||[]).forEach((st,si)=>st.vocab.forEach((v,j)=>out.push({id:`v${si}_${j}`,kind:"vocab",en:v[0],pt:v[1],story:st.title,front:v[0],back:v[1],set:"Palavras"})));
   ((state.custom)||[]).forEach(c=>out.push({id:c.id,front:c.s||"",back:c.t,set:c.set||"Meus cards"}));
   return out;
@@ -1032,6 +1059,20 @@ function previewIvl(id,q){const n=nextState(cardState(id),q); return n.ivl<=1?"1
 function sayEn(text){try{speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; speechSynthesis.speak(u);}catch(e){}}
 
 const CARD_FILTERS=[["vocab","Palavras"],["frases","Frases"],["erros","Erros do ditado"],["meus","Meus cards"],[null,"Tudo"]];
+// Cartão de estudo: frente e verso, com giro 3D. Toque (ou Enter/Espaço) para virar.
+function flashCard(o){
+  const wrap=el("div","fcwrap"), fc=el("div","fc"+(o.shown?" flipped":"")), inner=el("div","fc-in");
+  inner.tabIndex=0; inner.setAttribute("role","button"); inner.setAttribute("aria-label","Cartão. Toque para virar e ver a resposta.");
+  const long=Math.max(o.frontText.length,o.backText.length)>34, tc="fc-text"+(long?" long":"");
+  const f=el("div","fc-face front"); f.append(el("span","fc-label",o.frontLabel),el("p",tc,o.frontText),el("span","fc-hint","Toque para virar"));
+  const b=el("div","fc-face back"); b.append(el("span","fc-label",o.backLabel),el("p",tc,o.backText)); if(o.note) b.appendChild(el("span","fc-note",o.note));
+  inner.append(f,b); fc.appendChild(inner); wrap.appendChild(fc);
+  let flipped=!!o.shown, say=null;
+  const flip=()=>{ if(flipped) return; flipped=true; fc.classList.add("flipped"); inner.setAttribute("aria-label","Cartão virado: "+o.backText); cs.shown=true; if(say) say.hidden=false; if(o.onFlip) o.onFlip(); };
+  inner.onclick=flip; inner.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault(); flip();} };
+  if(o.say){ say=btn("fc-say","🔊",e=>{e.stopPropagation(); sayEn(o.say);}); say.setAttribute("aria-label","Ouvir em inglês"); say.hidden=!(o.sayFront||o.shown); wrap.appendChild(say); }
+  return {wrap,flip};
+}
 function rateRow(c){
   const row=el("div","rate");
   [["Errei",0],["Difícil",1],["Bom",2],["Fácil",3]].forEach(([l,q])=>{
@@ -1043,7 +1084,7 @@ function rateRow(c){
 }
 function renderCards(m){
   if(!cs.queue){cs={queue:dueCards(10).map(c=>c.id),i:0,shown:false,done:0};}
-  pageTitle(m,"Cards","Veja a palavra ou a frase, tente lembrar e só então toque em Revelar.");
+  pageTitle(m,"Cards","Veja a palavra ou a frase em inglês ou português, tente lembrar e só então vire o cartão.");
   const st=state.streak||{count:0,last:-1};
   const hdr=el("div","cardhead");
   hdr.append(el("span",null,`🔥 ${streakNow()} ${streakNow()===1?"dia":"dias"} seguidos`), el("span",null,`⭐ ${state.xp||0} XP`));
@@ -1051,7 +1092,7 @@ function renderCards(m){
   const fb=el("div","bar2"); fb.setAttribute("role","group"); fb.setAttribute("aria-label","Tipo de card");
   CARD_FILTERS.forEach(([k,l])=>{ const b=btn("chip",l,()=>{cardFilter=k; cs={queue:null,i:0,shown:false,done:0}; renderMain();}); b.setAttribute("aria-pressed",cardFilter===k); fb.appendChild(b); });
   m.appendChild(fb);
-  if(cardFilter==="vocab"){
+  if(cardFilter!=="meus"){
     const db=el("div","bar2"); db.setAttribute("role","group"); db.setAttribute("aria-label","Direção");
     [["en","Inglês → Português"],["pt","Português → Inglês"],["mix","Misto"]].forEach(([k,l])=>{ const b=btn("chip",l,()=>{state.vdir=k; persist(); cs.shown=false; renderMain();}); b.setAttribute("aria-pressed",vdirNow()===k); db.appendChild(b); });
     m.appendChild(db);
@@ -1065,31 +1106,22 @@ function renderCards(m){
     box.appendChild(again);
   } else {
     const c=cardById(cs.queue[cs.i]);
+    box.classList.add("deck");
     box.appendChild(el("p","dzmeta",`Card ${cs.i+1} de ${cs.queue.length} · ${c.set}`));
+    let fo;
     if(c.kind==="vocab"){
-      const d=dirFor(c), frontTxt=d==="en"?c.en:c.pt, backTxt=d==="en"?c.pt:c.en;
-      box.appendChild(el("p","dzmeta",d==="en"?"Em inglês":"Em português"));
-      box.appendChild(el("p","cardfront big",frontTxt));
-      if(d==="en") box.appendChild(btn("ghost","🔊 Ouvir",()=>sayEn(c.en)));
-      if(!cs.shown){
-        box.appendChild(btn("primary","Revelar",()=>{cs.shown=true; renderMain();}));
-      } else {
-        box.appendChild(el("p","dzmeta",d==="en"?"Em português":"Em inglês"));
-        box.appendChild(el("p","cardback",backTxt));
-        if(d==="pt") box.appendChild(btn("ghost","🔊 Ouvir",()=>sayEn(c.en)));
-        box.appendChild(el("p","dzmeta",`Da história: ${c.story}`));
-        box.appendChild(rateRow(c));
-      }
+      const d=dirFor(c);
+      fo={frontLabel:d==="en"?"Em inglês":"Em português",frontText:d==="en"?c.en:c.pt,backLabel:d==="en"?"Em português":"Em inglês",backText:d==="en"?c.pt:c.en,note:`Da história: ${c.story}`,say:c.en,sayFront:d==="en"};
+    } else if(c.pt){
+      const d=dirFor(c);
+      fo={frontLabel:d==="en"?"Em inglês":"Em português",frontText:d==="en"?c.back:c.pt,backLabel:d==="en"?"Em português":"Em inglês",backText:d==="en"?c.pt:c.back,note:c.front?`Como soa: ${c.front}`:"",say:c.back,sayFront:d==="en"};
     } else {
-      if(c.front) box.appendChild(el("p","cardfront",c.front));
-      box.appendChild(btn("ghost","🔊 Ouvir a frase",()=>sayEn(c.back)));
-      if(!cs.shown){
-        box.appendChild(btn("primary","Revelar",()=>{cs.shown=true; renderMain();}));
-      } else {
-        box.appendChild(el("p","cardback",c.back));
-        box.appendChild(rateRow(c));
-      }
+      fo={frontLabel:"Como soa",frontText:c.front||"Ouça e lembre a frase",backLabel:"Frase",backText:c.back,say:c.back,sayFront:true};
     }
+    const rate=rateRow(c); rate.hidden=!cs.shown;
+    const revealBtn=btn("primary","Revelar",()=>card.flip()); revealBtn.hidden=cs.shown;
+    const card=flashCard(Object.assign(fo,{shown:cs.shown,onFlip:()=>{rate.hidden=false; revealBtn.hidden=true;}}));
+    box.append(card.wrap,revealBtn,rate);
   }
   m.appendChild(box);
 
@@ -1536,7 +1568,7 @@ function renderPraticar(m){
   const erros=all.filter(c=>c.set==="Erros do ditado").length, meus=all.filter(c=>c.set==="Meus cards").length;
   const list=[
     ["🔤","Palavras",`${voc} palavras: veja em inglês ou português e toque para revelar.`,()=>openCards("vocab"),"#7B5CF0"],
-    ["🃏","Frases",`${fr} frases com revisão espaçada.`,()=>openCards("frases"),"#C24DD6"],
+    ["🃏","Frases",`${fr} frases: veja em português ou inglês e vire o cartão.`,()=>openCards("frases"),"#C24DD6"],
     ["🧩","Quiz","Complete, ordene e ouça. Dez perguntas por rodada.",()=>go(7),"#E0529A"],
     ["🎤","Fala","Fale a frase e veja o que o navegador entendeu.",()=>go(8),"#1FA67A"],
     ["🎧","Modo áudio","Ouça frases e repita em voz alta, sem olhar a tela.",()=>go(9),"#E8833A"],
