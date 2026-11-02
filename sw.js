@@ -1,7 +1,8 @@
 // Service worker do HWLLY | ENGLISH: deixa o app abrir sem internet depois da primeira visita.
 // A página principal usa rede primeiro, para sempre pegar a versão mais nova quando há conexão.
-const CACHE = "hwlly-v2";
+const CACHE = "hwlly-v3";
 const SHELL = ["./", "./index.html", "./novidades.html", "./manifest.json",
+  "./classico.html", "./recursos.html", "./data/deck.js", "./data/features.json",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
