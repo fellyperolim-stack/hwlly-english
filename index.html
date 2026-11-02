@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#6A3FD6">
+<meta name="theme-color" content="#FF5A36">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,27 +17,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F3F0FA; --surface:#FFFFFF; --ink:#1D1730; --muted:#6A6280; --line:#DDD6EC;
-  --teal:#6A3FD6; --teal-soft:#EAE2FC; --amber:#C93C72; --amber-soft:#FBE1EB; --danger:#B3402E;
-  --bar-empty:#D8D0EA;
+  --bg:#F6F3EC; --surface:#FFFFFF; --ink:#14213D; --muted:#5B6478; --line:#E2DCCF;
+  --teal:#FF5A36; --teal-soft:#FFE3DA; --amber:#6C4DFF; --amber-soft:#E7E1FF; --danger:#C2321A;
+  --bar-empty:#E4DDD0;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#14111D; --surface:#1E1A2B; --ink:#EEEAF7; --muted:#A99FC2; --line:#352E48;
-    --teal:#A98BFF; --teal-soft:#2D2450; --amber:#FF7FAE; --amber-soft:#45223A; --danger:#E77763;
-    --bar-empty:#3A3150;
+    --bg:#0E1424; --surface:#161E33; --ink:#F4F1EA; --muted:#9AA3B8; --line:#26304A;
+    --teal:#FF7A5C; --teal-soft:#3A2620; --amber:#A897FF; --amber-soft:#262245; --danger:#FF8A75;
+    --bar-empty:#27314D;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#14111D; --surface:#1E1A2B; --ink:#EEEAF7; --muted:#A99FC2; --line:#352E48;
-  --teal:#A98BFF; --teal-soft:#2D2450; --amber:#FF7FAE; --amber-soft:#45223A; --danger:#E77763;
-  --bar-empty:#3A3150;
+  --bg:#0E1424; --surface:#161E33; --ink:#F4F1EA; --muted:#9AA3B8; --line:#26304A;
+  --teal:#FF7A5C; --teal-soft:#3A2620; --amber:#A897FF; --amber-soft:#262245; --danger:#FF8A75;
+  --bar-empty:#27314D;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.6 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.6 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;
+  background-image:radial-gradient(60rem 30rem at 100% -10%,color-mix(in srgb,var(--teal) 18%,transparent),transparent 60%),radial-gradient(40rem 25rem at -10% 10%,color-mix(in srgb,var(--amber) 14%,transparent),transparent 60%);background-attachment:fixed}
 h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.15;margin:0}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--teal);outline-offset:2px}
@@ -96,6 +100,12 @@ nav button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-co
 .primary:disabled{opacity:.5;cursor:default}
 .ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:.6rem 1rem}
 [hidden]{display:none!important}
+#tabs .grp,#tabs .sub-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:.5rem 0}
+#tabs .sub-tabs{margin-top:0;padding-bottom:.25rem}
+#tabs .grp button{font-weight:700}
+#tabs .sub-tabs button{font-size:.9rem;padding:.35rem .75rem}
+.who{display:flex;align-items:center;gap:.5rem;font-weight:700;color:var(--ink);font-size:.95rem;flex-basis:100%}
+.who img{width:1.9rem;height:1.9rem;border-radius:50%;background:var(--line);object-fit:cover}
 #gate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg);z-index:10}
 body.locked #gate{display:flex}
 body.locked .wrap{display:none}
@@ -103,6 +113,39 @@ body.locked .wrap{display:none}
 #gate h1{margin:0 0 .5rem;font-size:1.4rem}
 #gate p{color:var(--muted);margin:0 0 1.5rem}
 #gate #gateMsg{min-height:1.4em;font-size:.95rem;margin:1rem 0 0}
+#gate .card{box-shadow:0 24px 60px -20px color-mix(in srgb,var(--teal) 40%,transparent)}
+#gate .card .logo{width:4.5rem;margin:0 auto .8rem;display:block}
+#gate .primary{width:100%;background:var(--teal);color:#fff;font-size:1.02rem;padding:.8rem 1rem}
+
+/* Celular: layout em uma coluna, alvos de toque maiores, respeita área segura */
+@media (max-width:640px){
+  .wrap{padding:1rem .9rem calc(3rem + env(safe-area-inset-bottom,0px))}
+  header{padding:1rem 0 .5rem}
+  h1{font-size:clamp(1.9rem,9vw,2.4rem)}
+  .brand{gap:.6rem}
+  .sub{font-size:.95rem}
+  .wave{height:64px;margin:1.1rem 0 .4rem}
+  .stats{font-size:.9rem}
+  nav{padding:.6rem 0;gap:.35rem}
+  nav button{min-height:44px;padding:.5rem .9rem}
+  #tabs .grp button{flex:1 1 auto;min-height:44px}
+  #tabs .sub-tabs button{min-height:40px}
+  .weekhead h2{font-size:1.35rem}
+  .day{padding:.9rem .85rem;border-radius:16px}
+  .dayhead{flex-direction:column;align-items:flex-start;gap:.3rem}
+  .check{width:2.4rem;height:2.4rem}
+  .task{gap:.6rem}
+  .dzplay .primary{width:100%}
+  .dzctl{flex-direction:column;align-items:stretch}
+  .seg{width:100%}
+  .seg button{flex:1;min-height:44px}
+  .dlgact button{flex:1;min-height:44px}
+  dialog{width:calc(100% - 1.5rem)}
+}
+@media (max-width:360px){
+  .wave{height:52px}
+  h1{font-size:1.75rem}
+}
 .rtext{white-space:pre-wrap;margin-top:1rem;line-height:1.65}
 .rmeta{color:var(--muted);font-size:.85rem;margin-top:.6rem}
 .err{color:var(--danger);font-size:.95rem;margin-top:.6rem}
@@ -173,6 +216,7 @@ textarea{min-height:8rem;resize:vertical}
       <span><strong id="stDone">0</strong> de 90 tarefas feitas</span>
       <span id="sync">Carregando…</span>
       <a href="novidades.html" class="ghost" style="text-decoration:none;color:inherit">Novidades em pesquisa</a>
+      <div id="who" class="who" hidden></div>
       <button id="authBtn" class="ghost" hidden>Entrar com Google</button>
     </div>
   </header>
@@ -271,13 +315,34 @@ function renderWave(){
   $("stDone").textContent=Object.values(state.done).filter(Boolean).length;
 }
 
+// Navegação agrupada: primeiro nível (Plano, Ditado, Novidades) e, dentro de Plano, as semanas.
+const GROUPS=[{id:"plano",label:"📅 Plano",first:0},{id:"ditado",label:"🎧 Ditado",first:5},{id:"novidades",label:"🔎 Novidades",href:"novidades.html"}];
+const PLANO_ITEMS=["Semana 1","Semana 2","Semana 3","Semana 4","Final"];
+
 function renderTabs(){
   const t=$("tabs"); t.innerHTML="";
-  ["Semana 1","Semana 2","Semana 3","Semana 4","Final","🎧 Ditado"].forEach((l,i)=>{
-    const b=document.createElement("button"); b.textContent=l; b.setAttribute("role","tab");
-    b.setAttribute("aria-selected",i===curWeek); b.onclick=()=>{curWeek=i; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
-    t.appendChild(b);
+  const top=document.createElement("div"); top.className="grp";
+  const inPlano=curWeek<5, inDitado=curWeek===5;
+  GROUPS.forEach(g=>{
+    const b=document.createElement("button"); b.textContent=g.label; b.setAttribute("role","tab");
+    if(g.href){ b.onclick=()=>{location.href=g.href;}; }
+    else {
+      const active=(g.id==="plano"&&inPlano)||(g.id==="ditado"&&inDitado);
+      b.setAttribute("aria-selected",active);
+      b.onclick=()=>{curWeek=g.first; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
+    }
+    top.appendChild(b);
   });
+  t.appendChild(top);
+  if(inPlano){
+    const sub=document.createElement("div"); sub.className="sub-tabs";
+    PLANO_ITEMS.forEach((l,i)=>{
+      const b=document.createElement("button"); b.textContent=l; b.setAttribute("role","tab");
+      b.setAttribute("aria-selected",i===curWeek); b.onclick=()=>{curWeek=i; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
+      sub.appendChild(b);
+    });
+    t.appendChild(sub);
+  }
 }
 
 const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
@@ -511,6 +576,7 @@ async function startCloudSync(){
         return;
       }
       document.body.classList.remove("locked"); btn.textContent="Sair";
+      const who=$("who"); if(who){ who.hidden=false; who.textContent=""; const img=document.createElement("img"); img.alt=""; if(u.photoURL) img.src=u.photoURL; const nm=document.createElement("span"); nm.textContent="Progresso de "+(u.displayName||u.email||"sua conta"); who.append(img,nm); }
       render();
       try{ await attachRef(fdb.collection("users").doc(u.uid).collection("app").doc("estado")); }
       catch(e){ setSync("Não foi possível carregar sua conta; salvo neste navegador"); }
@@ -518,6 +584,10 @@ async function startCloudSync(){
   }catch(e){ document.body.classList.remove("locked"); setSync("Salvo neste navegador"); }
 }
 startCloudSync();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+}
 </script>
 </body>
 </html>
