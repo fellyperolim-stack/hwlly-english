@@ -95,6 +95,7 @@ nav button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-co
 .primary{background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:.65rem 1.1rem;font-weight:700}
 .primary:disabled{opacity:.5;cursor:default}
 .ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:.6rem 1rem}
+[hidden]{display:none!important}
 .rtext{white-space:pre-wrap;margin-top:1rem;line-height:1.65}
 .rmeta{color:var(--muted);font-size:.85rem;margin-top:.6rem}
 .err{color:var(--danger);font-size:.95rem;margin-top:.6rem}
@@ -156,6 +157,7 @@ textarea{min-height:8rem;resize:vertical}
     <div class="stats">
       <span><strong id="stDone">0</strong> de 90 tarefas feitas</span>
       <span id="sync">Carregando…</span>
+      <button id="authBtn" class="ghost" hidden>Entrar com Google</button>
     </div>
   </header>
   <nav id="tabs" role="tablist"></nav>
@@ -163,6 +165,9 @@ textarea{min-height:8rem;resize:vertical}
 </div>
 
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 const START = new Date(2026, 9, 5); // ajustado: Dia 14 = 18/out
 const WD = ["dom","seg","ter","qua","qui","sex","sáb"];
@@ -439,23 +444,60 @@ function renderDictation(m){
 function render(){renderWave(); renderTabs(); renderMain();}
 render(); setSync("Salvo neste navegador");
 
-(async()=>{
+// ---- Sincronização entre aparelhos ----
+// 1) Publicado como artifact no Claude: usa o banco do próprio Claude.
+// 2) Publicado no GitHub Pages: usa Firebase (login Google + Firestore).
+//    Cole a configuração do seu projeto Firebase abaixo (passo a passo no README).
+//    Enquanto estiver null, o progresso fica só no navegador.
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyATfGyuu2FT-9jvZLOdEg-8ESrWO8JNDLI",
+  authDomain: "hwlly-english.firebaseapp.com",
+  projectId: "hwlly-english",
+  storageBucket: "hwlly-english.firebasestorage.app",
+  messagingSenderId: "858571422952",
+  appId: "1:858571422952:web:f3347aab0c366c3c0d1d5d"
+};
+
+async function attachRef(doc){
+  ref=doc;
+  const snap=await ref.get();
+  if(snap.exists){
+    const d=snap.data()||{};
+    state=Object.assign({},d,{done:d.done||{}});
+    try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}
+    render(); setSync("Salvo na sua conta");
+  } else {
+    persist(); // primeira vez nesta conta: envia o progresso deste aparelho
+  }
+}
+
+async function startCloudSync(){
   try{
-    if(!window.claude||!window.claude.use) return;
-    const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
-    if(db&&user){
-      const id=await user.id();
-      if(id){
-        ref=db.collection("data/users/"+id).doc("estado");
-        const snap=await ref.get();
-        if(snap.exists){const d=snap.data()||{}; state=Object.assign({},d,{done:d.done||{}}); try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){} setSync("Salvo na sua conta");}
-        else if(Object.keys(state.done).length){persist();}
-        else setSync("Salvo na sua conta");
-      }
+    if(window.claude&&window.claude.use){
+      const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+      const id=db&&user&&await user.id();
+      if(id){ await attachRef(db.collection("data/users/"+id).doc("estado")); return; }
     }
-    render();
-  }catch(e){setSync("Salvo neste navegador");}
-})();
+  }catch(e){}
+  if(!FIREBASE_CONFIG||!window.firebase){ setSync("Salvo neste navegador"); return; }
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const auth=firebase.auth(), fdb=firebase.firestore();
+    const btn=$("authBtn"); btn.hidden=false;
+    btn.onclick=()=>{
+      if(auth.currentUser) return auth.signOut();
+      return auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+        .catch(()=>setSync("Login cancelado. Salvo neste navegador"));
+    };
+    auth.onAuthStateChanged(async u=>{
+      if(!u){ ref=null; btn.textContent="Entrar com Google"; setSync("Salvo neste navegador"); return; }
+      btn.textContent="Sair";
+      try{ await attachRef(fdb.collection("users").doc(u.uid).collection("app").doc("estado")); }
+      catch(e){ setSync("Não foi possível carregar sua conta; salvo neste navegador"); }
+    });
+  }catch(e){ setSync("Salvo neste navegador"); }
+}
+startCloudSync();
 </script>
 </body>
 </html>
