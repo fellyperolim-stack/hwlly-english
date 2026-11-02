@@ -158,17 +158,6 @@
       "ideia_para_o_site": "Aba Praticar > Cards: formulário para adicionar suas frases."
     },
     {
-      "nome": "Vídeos com legenda dupla",
-      "categoria": "escuta",
-      "descricao": "Vídeo com legenda no idioma alvo e na língua nativa, com opção de ocultar.",
-      "apps": [
-        "memrise",
-        "busuu"
-      ],
-      "ja_temos": false,
-      "ideia_para_o_site": "Os links de vídeo já existem; falta a opção de legenda."
-    },
-    {
       "nome": "Reconhecimento de voz",
       "categoria": "fala",
       "descricao": "O app escuta o usuário e avalia a pronúncia.",
@@ -179,18 +168,6 @@
       ],
       "ja_temos": true,
       "ideia_para_o_site": "Aba Praticar > Fala: usa o reconhecimento de voz do navegador."
-    },
-    {
-      "nome": "Tutor de conversa com IA",
-      "categoria": "fala",
-      "descricao": "Conversa livre com IA, com correção no final.",
-      "apps": [
-        "speak",
-        "babbel",
-        "duolingo"
-      ],
-      "ja_temos": false,
-      "ideia_para_o_site": "Chat com IA quando houver chave configurada (ver proposta de integração)."
     },
     {
       "nome": "Aulas ao vivo com professor",
@@ -263,36 +240,6 @@
       ],
       "ja_temos": true,
       "ideia_para_o_site": "Perfil > Conquistas: 18 medalhas por marcos."
-    },
-    {
-      "nome": "Ligas semanais",
-      "categoria": "social",
-      "descricao": "Ranking semanal em grupos pequenos, com promoção para a liga seguinte.",
-      "apps": [
-        "duolingo"
-      ],
-      "ja_temos": false,
-      "ideia_para_o_site": "Existe a versão pessoal (divisões por XP semanal). Ranking entre pessoas precisa de servidor."
-    },
-    {
-      "nome": "Missões com amigos",
-      "categoria": "social",
-      "descricao": "Desafio semanal feito em dupla.",
-      "apps": [
-        "duolingo"
-      ],
-      "ja_temos": false,
-      "ideia_para_o_site": "Missão conjunta entre duas contas."
-    },
-    {
-      "nome": "Sequência compartilhada com amigo",
-      "categoria": "social",
-      "descricao": "Sequência que só continua se os dois estudarem.",
-      "apps": [
-        "duolingo"
-      ],
-      "ja_temos": false,
-      "ideia_para_o_site": "Sequência conjunta entre você e sua esposa."
     },
     {
       "nome": "Histórias interativas",
