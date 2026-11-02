@@ -475,6 +475,9 @@ button.vid{font:inherit;cursor:pointer}
 .readx .vid.read{background:var(--amber-soft);color:var(--amber)}
 body,.app,.content{background-color:transparent}
 .opt,.chip,select{color:var(--ink)}
+.task.challenge{border-left:3px solid var(--amber);padding-left:.7rem;margin-left:-.2rem}
+.task.challenge .ttext b{color:var(--amber)}
+.tag.hard{background:var(--amber-soft);color:var(--amber);margin-left:.4rem}
 </style>
 </head>
 <body class="locked">
@@ -506,7 +509,7 @@ body,.app,.content{background-color:transparent}
   <div class="side-foot">
     <div class="wave" id="wave" aria-label="Progresso diário"></div>
     <div class="stats">
-      <span><strong id="stDone">0</strong> de 540 tarefas feitas</span>
+      <span><strong id="stDone">0</strong> de <span id="stTot">540</span> tarefas feitas</span>
       <span id="sync">Carregando…</span>
       <div id="who" class="who" hidden></div>
       <button id="authBtn" class="ghost" hidden>Entrar com Google</button>
@@ -603,16 +606,35 @@ const MODES=[
  "mini-teste: ouça 3 minutos sem legenda e responda quem, o quê e onde.",
  "dia leve: ouça por prazer, sem anotar nada."
 ];
+// Desafios extras: o mês N tem N desafios por dia, com metas que sobem a cada mês.
+// Cada dia sorteia (por rotação) quais desafios entram, para não ficar repetitivo.
+function makeChallenges(t,idx,title){
+  const view=(v,label)=>({type:"view",v,label});
+  const all=[
+    {l:"Desafio Quiz (5 min)",x:`Acerte ${Math.min(9,5+t)} de 9 perguntas em uma rodada do Quiz.`,go:view(7,"Abrir o quiz")},
+    {l:"Desafio Fala (5 min)",x:`Fale ${2+t} frases em voz alta e consiga 80% ou mais em todas.`,go:view(8,"Abrir a fala")},
+    {l:"Desafio Ditado (5 min)",x:`Faça ${2+Math.floor(t/2)} frases do ditado com ${80+2*t}% ou mais.`,go:view(5,"Abrir o ditado")},
+    {l:"Desafio Shadowing (5 min)",x:`Repita ${t+1} frases de "${title}" sem pausar, imitando ritmo e entonação.`},
+    {l:"Desafio Resumo (5 min)",x:`Conte "${title}" em ${t+1} frases, sem olhar o texto, falando em voz alta.`},
+    {l:"Desafio Escuta (10 min)",x:`Ouça ${5+t*3} minutos de áudio sem legenda e escreva 3 coisas que entendeu.`,go:view(9,"Abrir o modo áudio")},
+    {l:"Desafio Palavras (5 min)",x:`Revise ${10+5*t} cards de palavras e acerte pelo menos ${6+t} sem errar.`,go:{type:"cards",f:"vocab",dir:t>=3?"mix":"pt",label:"Abrir os cards"}}
+  ];
+  const out=[];
+  for(let i=0;i<t;i++){ const c=Object.assign({hard:true},all[(idx+i)%all.length]); out.push(c); }
+  return out;
+}
 (function(){
-  const stories=window.STORIES||[];
+  const rank={A1:0,A2:1,B1:2,B2:3,C1:4};
+  const stories=(window.STORIES||[]).map((x,i)=>({s:x,i})).sort((a,b)=>(rank[a.s.level]||0)-(rank[b.s.level]||0)||a.i-b.i);
   let n=31;
-  MONTHS.forEach(M=>{
-    const sections=M.weeks.map((w,i)=>({title:`${M.name} · Semana ${i+1}: ${w[0]}`,goal:w[1],len:7,close:false}));
-    sections.push({title:`${M.name} · Revisão e Teste: ${M.theme}`,goal:"Revise o mês inteiro e meça sua evolução antes de seguir para o próximo.",len:2,close:true});
+  MONTHS.forEach((M,mi)=>{
+    const tier=mi+1; // quanto mais avançado o mês, mais desafios extras por dia
+    const sections=M.weeks.map((w,i)=>({title:`${M.name} · Semana ${i+1}: ${w[0]}`,goal:`${w[1]} Desafios extras por dia: ${tier}.`,len:7,close:false}));
+    sections.push({title:`${M.name} · Revisão e Teste: ${M.theme}`,goal:`Revise o mês inteiro e meça sua evolução antes de seguir para o próximo. Desafios extras por dia: ${tier}.`,len:2,close:true});
     sections.forEach(sec=>{
       const days=[];
       for(let k=0;k<sec.len;k++,n++){
-        const idx=n-31, pos=idx%3, si=stories.length?Math.floor(idx/3)%stories.length:-1, st=si>=0?stories[si]:null;
+        const idx=n-31, pos=idx%3, k3=stories.length?Math.floor(idx/3)%stories.length:-1, si=k3>=0?stories[k3].i:-1, st=k3>=0?stories[k3].s:null;
         const src=M.pool[idx%M.pool.length], title=st?st.title:"uma história";
         const t1=[
           {l:"Leitura (10 min)",x:`História nova: "${title}"${st?` (${st.level})`:""}. Leia, toque nas frases para ouvir e responda às 3 perguntas.`},
@@ -627,7 +649,8 @@ const MODES=[
         ][pos];
         const t3={l:"Escuta (10 min)",x:`${src[0]}: ${MODES[idx%7]}`,url:src[1]};
         const flags=sec.close?(k===0?{test:true}:{review:true}):(k===sec.len-1?{review:true}:{});
-        days.push(Object.assign({tasks:[t1,t2,t3]},flags));
+        const extras=makeChallenges(tier,idx,title);
+        days.push(Object.assign({tasks:[t1,t2,t3,...extras],extra:extras.length},flags));
       }
       WEEKS.push({title:sec.title,goal:sec.goal,days});
     });
@@ -636,6 +659,7 @@ const MODES=[
 // flatten
 const DAYS=[]; WEEKS.forEach((w,wi)=>w.days.forEach(d=>{const n=DAYS.length; const dt=new Date(START); dt.setDate(START.getDate()+n); d.n=n+1; d.week=wi; d.date=dt; DAYS.push(d);}));
 const key=(n,i)=>`d${n}t${i}`;
+const TOTAL_TASKS=DAYS.reduce((a,d)=>a+d.tasks.length,0);
 const VIDS={"1-0": [{"t": "All Ears English", "q": "All Ears English podcast"}], "1-1": [{"t": "Rachel's English: Intro to linking", "u": "https://rachelsenglish.com/intro-linking/"}, {"t": "Mais vídeos de linking", "q": "Rachel's English linking"}], "1-2": [{"t": "BBC 6 Minute English", "q": "BBC Learning English 6 Minute English"}], "2-0": [{"t": "BBC 6 Minute English", "q": "BBC Learning English 6 Minute English"}], "2-1": [{"t": "Aula de weak forms", "q": "weak forms English pronunciation lesson"}], "2-2": [{"t": "BBC 6 Minute English", "q": "BBC Learning English 6 Minute English"}], "3-0": [{"t": "English with Lucy", "q": "English with Lucy listening practice"}], "3-1": [{"t": "English with Lucy", "q": "English with Lucy listening practice"}], "3-2": [{"t": "Easy English", "q": "Easy English street interviews"}], "4-0": [{"t": "Easy English", "q": "Easy English street interviews"}], "4-1": [{"t": "Aula de contrações", "q": "English contractions pronunciation lesson"}], "4-2": [{"t": "TED-Ed", "q": "TED-Ed"}], "5-1": [{"t": "BBC 6 Minute English", "q": "BBC Learning English 6 Minute English"}], "6-0": [{"t": "All Ears English", "q": "All Ears English podcast"}], "6-1": [{"t": "Rachel's English: elisão", "q": "Rachel's English dropped sounds elision"}], "6-2": [{"t": "All Ears English", "q": "All Ears English podcast"}], "7-0": [{"t": "All Ears English", "q": "All Ears English podcast"}], "7-1": [{"t": "All Ears English", "q": "All Ears English podcast"}], "8-0": [{"t": "Luke's English Podcast", "q": "Luke's English Podcast"}], "8-1": [{"t": "Rachel's English: reduções", "q": "Rachel's English reductions gonna wanna"}], "8-2": [{"t": "Luke's English Podcast", "q": "Luke's English Podcast"}], "9-0": [{"t": "All Ears English", "q": "All Ears English podcast"}], "9-1": [{"t": "Reduções com you", "q": "Rachel's English didja whatcha reductions"}], "9-2": [{"t": "Speak English with Vanessa", "q": "Speak English with Vanessa"}], "10-0": [{"t": "Easy English", "q": "Easy English street interviews"}], "10-1": [{"t": "Modais no passado na fala", "q": "must have might have should have pronunciation reduction"}], "10-2": [{"t": "Friends com Rachel's English", "q": "Rachel's English Friends scene study"}, {"t": "Cenas de Modern Family", "q": "Modern Family best scenes"}], "11-0": [{"t": "Cenas de Friends", "q": "Friends scene English subtitles"}], "11-1": [{"t": "Cenas de Friends", "q": "Friends scene English subtitles"}], "11-2": [{"t": "Cenas de Friends", "q": "Friends scene English subtitles"}], "12-1": [{"t": "Luke's English Podcast", "q": "Luke's English Podcast"}], "13-0": [{"t": "TED: Julian Treasure (com transcrição)", "u": "https://www.ted.com/talks/julian_treasure_how_to_speak_so_that_people_want_to_listen"}, {"t": "Outros TED Talks", "q": "TED Talks"}], "13-1": [{"t": "Condicionais mistas", "q": "mixed conditionals English grammar"}], "13-2": [{"t": "TED: Julian Treasure", "u": "https://www.ted.com/talks/julian_treasure_how_to_speak_so_that_people_want_to_listen"}], "14-0": [{"t": "Luke's English Podcast", "q": "Luke's English Podcast"}], "14-1": [{"t": "Cenas de séries", "q": "Friends scene English subtitles"}], "15-0": [{"t": "All Ears English", "q": "All Ears English podcast"}], "15-1": [{"t": "All Ears English", "q": "All Ears English podcast"}], "15-2": [{"t": "The Office (US)", "q": "The Office US best scenes"}], "16-0": [{"t": "The Office (US)", "q": "The Office US best scenes"}], "16-1": [{"t": "Rachel's English: flap T", "q": "Rachel's English flap T"}], "16-2": [{"t": "The Office (US)", "q": "The Office US best scenes"}], "17-0": [{"t": "The Graham Norton Show", "q": "The Graham Norton Show"}], "17-1": [{"t": "Filler words em conversa", "q": "filler words English conversation I mean you know like"}], "17-2": [{"t": "The Graham Norton Show", "q": "The Graham Norton Show"}], "18-0": [{"t": "The Diary of a CEO", "q": "The Diary of a CEO"}], "18-1": [{"t": "The Diary of a CEO", "q": "The Diary of a CEO"}], "18-2": [{"t": "The Diary of a CEO", "q": "The Diary of a CEO"}], "19-1": [{"t": "All Ears English", "q": "All Ears English podcast"}], "19-2": [{"t": "The Office (US)", "q": "The Office US best scenes"}], "20-0": [{"t": "Kurzgesagt", "q": "Kurzgesagt"}, {"t": "Vox", "q": "Vox explained"}], "20-1": [{"t": "Inversão na gramática", "q": "inversion English grammar never have I"}], "20-2": [{"t": "Kurzgesagt", "q": "Kurzgesagt"}], "21-0": [{"t": "Cenas de Modern Family", "q": "Modern Family best scenes"}], "21-1": [{"t": "Cenas de Modern Family", "q": "Modern Family best scenes"}], "22-0": [{"t": "Sotaque australiano", "q": "Australian accent interview"}, {"t": "Bluey", "q": "Bluey official"}], "22-1": [{"t": "Comparação de sotaques", "q": "British vs American vs Australian accent comparison"}], "22-2": [{"t": "Ted Lasso", "q": "Ted Lasso best scenes"}], "23-0": [{"t": "Ted Lasso", "q": "Ted Lasso best scenes"}], "23-1": [{"t": "Gírias britânicas", "q": "British slang explained"}], "23-2": [{"t": "Ted Lasso", "q": "Ted Lasso best scenes"}], "24-0": [{"t": "Huberman Lab", "q": "Huberman Lab"}, {"t": "Lex Fridman Podcast", "q": "Lex Fridman Podcast"}], "24-1": [{"t": "Cleft sentences", "q": "cleft sentences English grammar"}], "24-2": [{"t": "Huberman Lab", "q": "Huberman Lab"}], "25-0": [{"t": "Sotaque escocês", "q": "Scottish accent interview"}, {"t": "Sotaque irlandês", "q": "Irish accent interview"}], "25-1": [{"t": "Sotaque escocês", "q": "Scottish accent interview"}], "25-2": [{"t": "Halloween em inglês", "q": "Halloween movie scenes English"}], "26-1": [{"t": "Easy English", "q": "Easy English street interviews"}], "27-0": [{"t": "Conan O'Brien Needs a Friend", "q": "Conan O'Brien Needs a Friend"}], "27-1": [{"t": "Participle clauses", "q": "participle clauses English grammar"}], "27-2": [{"t": "Conan O'Brien Needs a Friend", "q": "Conan O'Brien Needs a Friend"}], "28-0": [{"t": "The Diary of a CEO", "q": "The Diary of a CEO"}, {"t": "Conan O'Brien Needs a Friend", "q": "Conan O'Brien Needs a Friend"}], "28-1": [{"t": "The Diary of a CEO", "q": "The Diary of a CEO"}], "29-0": [{"t": "All Ears English", "q": "All Ears English podcast"}], "29-1": [{"t": "The Graham Norton Show", "q": "The Graham Norton Show"}]};
 const READ={14:["Ciência","BBC Future","https://www.bbc.com/future"],15:["Psicologia","Psyche","https://psyche.co"],16:["Tecnologia","The Guardian Technology","https://www.theguardian.com/technology"],17:["História","Smithsonian History","https://www.smithsonianmag.com/history/"],18:["Notícias em níveis","News in Levels","https://www.newsinlevels.com"],19:["Ideias e filosofia","Aeon Essays","https://aeon.co/essays"],20:["Natureza","National Geographic","https://www.nationalgeographic.com"],21:["Cultura","The Guardian Culture","https://www.theguardian.com/culture"],22:["Viagem","BBC Travel","https://www.bbc.com/travel"],23:["Ciência e saúde","The Guardian Science","https://www.theguardian.com/science"],24:["Reportagem longa","The Guardian Long Read","https://www.theguardian.com/news/series/the-long-read"],25:["Comida","The Guardian Food","https://www.theguardian.com/food"],26:["Notícias com exercícios","Breaking News English","https://breakingnewsenglish.com"],27:["Espaço","NASA","https://www.nasa.gov"],28:["Trabalho e carreira","BBC Worklife","https://www.bbc.com/worklife"],29:["Ciência e natureza","Smithsonian Science","https://www.smithsonianmag.com/science-nature/"],30:["Guias práticos","Psyche Guides","https://psyche.co/guides"]};
 const vurl=v=>v.u||('https://www.youtube.com/results?search_query='+encodeURIComponent(v.q));
@@ -662,16 +686,16 @@ function setSync(t){$("sync").textContent=t;}
 function renderWave(){
   const w=$("wave"); w.innerHTML=""; const ti=todayIndex();
   DAYS.forEach((d,i)=>{
-    const c=d.tasks.filter((_,k)=>state.done[key(d.n,k)]).length;
+    const c=d.tasks.filter((_,k)=>state.done[key(d.n,k)]).length, nt=d.tasks.length;
     const b=document.createElement("button");
-    b.className=(c===3?"full":c>0?"part":"")+(d.review?" rev":"")+(i===ti?" today":"");
-    b.setAttribute("aria-label",`Dia ${d.n}, ${fmt(d.date)}: ${c} de 3 tarefas`);
-    b.title=`Dia ${d.n} · ${c}/3`;
-    const s=document.createElement("span"); s.style.height=(12+c*29)+"%"; b.appendChild(s);
+    b.className=(c===nt?"full":c>0?"part":"")+(d.review?" rev":"")+(i===ti?" today":"");
+    b.setAttribute("aria-label",`Dia ${d.n}, ${fmt(d.date)}: ${c} de ${nt} tarefas`);
+    b.title=`Dia ${d.n} · ${c}/${nt}`;
+    const s=document.createElement("span"); s.style.height=(12+Math.round(c/nt*87))+"%"; b.appendChild(s);
     b.onclick=()=>openDay(d.week,d.n);
     w.appendChild(b);
   });
-  $("stDone").textContent=Object.values(state.done).filter(Boolean).length;
+  $("stDone").textContent=Object.values(state.done).filter(Boolean).length; if($("stTot")) $("stTot").textContent=TOTAL_TASKS;
 }
 
 // Navegação estilo site de estudo: menu lateral com seções (no celular, gaveta + barra inferior).
@@ -707,6 +731,7 @@ function go(i){
   render(); window.scrollTo({top:0,behavior:"smooth"});
 }
 function openTaskGo(g){
+  if(g.type==="view"){ go(g.v); return; }
   if(g.type==="story"){ sty={i:g.i,ans:{},lvl:"Todos"}; go(10); }
   else if(g.type==="cards"){ if(g.dir){ state.vdir=g.dir; persist(); } openCards(g.f); }
 }
@@ -757,11 +782,11 @@ function renderMain(){
   h.innerHTML=`<h2></h2><p></p>`; h.querySelector("h2").textContent=W.title; h.querySelector("p").textContent=W.goal; m.appendChild(h);
   W.days.forEach(d=>{
     const card=document.createElement("section"); card.className="day"+(d.n-1===ti?" isToday":""); card.id="day"+d.n;
-    const tag=d.review?'<span class="tag rev">Revisão</span>':d.test?'<span class="tag">Mini-teste</span>':(d.n-1===ti?'<span class="tag">Hoje</span>':"");
+    const tag=(d.review?'<span class="tag rev">Revisão</span>':d.test?'<span class="tag">Mini-teste</span>':(d.n-1===ti?'<span class="tag">Hoje</span>':""))+(d.extra?`<span class="tag hard">+${d.extra} ${d.extra===1?"desafio":"desafios"}</span>`:"");
     card.innerHTML=`<div class="dayhead"><h3>Dia ${d.n} · ${fmt(d.date)}</h3>${tag}</div>`;
     d.tasks.forEach((tk,i)=>{
       const k=key(d.n,i), done=!!state.done[k];
-      const row=document.createElement("div"); row.className="task"+(done?" done":"");
+      const row=document.createElement("div"); row.className="task"+(done?" done":"")+(tk.hard?" challenge":"");
       const btn=document.createElement("button"); btn.className="check"; btn.innerHTML=CHECK;
       btn.setAttribute("aria-label",(done?"Desmarcar: ":"Concluir: ")+tk.l); btn.setAttribute("aria-pressed",done);
       btn.onclick=(ev)=>{ev.stopPropagation();toggle(d,i);};
@@ -1309,8 +1334,8 @@ const BADGES=[
  {n:"Ouvido afiado",d:"Faça 10 frases do ditado",e:"👂",ok:s=>Object.keys(s.dict||{}).length>=10},
  {n:"Constância",d:"Marque 30 tarefas do plano",e:"✅",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=30},
  {n:"Primeiro mês",d:"Marque 90 tarefas do plano",e:"🏆",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=90},
- {n:"Metade do caminho",d:"Marque 270 tarefas do plano",e:"⛰️",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=270},
- {n:"Seis meses",d:"Marque as 540 tarefas do plano",e:"🎓",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=540},
+ {n:"Metade do caminho",d:`Marque ${Math.round(TOTAL_TASKS/2)} tarefas do plano`,e:"⛰️",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=Math.round(TOTAL_TASKS/2)},
+ {n:"Seis meses",d:`Marque as ${TOTAL_TASKS} tarefas do plano`,e:"🎓",ok:s=>Object.values(s.done||{}).filter(Boolean).length>=TOTAL_TASKS},
  {n:"10 histórias",d:"Termine 10 histórias",e:"📚",ok:s=>Object.keys(s.stories||{}).length>=10},
  {n:"50 histórias",d:"Termine 50 histórias",e:"🏛️",ok:s=>Object.keys(s.stories||{}).length>=50},
  {n:"100 palavras",d:"Revise 100 cards",e:"🔤",ok:s=>((s.stats||{}).reviews||0)>=100},
@@ -1460,7 +1485,7 @@ function renderInicio(m){
 
   const pl=el("section","wcard"); pl.appendChild(headRow("Seu plano de 6 meses","ABRIR TRILHA",()=>go(13)));
   const bar=el("div","bar"); const f=el("div","fill"); f.style.width=Math.round(doneDays/DAYS.length*100)+"%"; bar.appendChild(f); pl.appendChild(bar);
-  pl.append(el("p","dzmeta",`${doneDays} de ${DAYS.length} dias concluídos · ${tasks} de ${DAYS.length*3} tarefas feitas`)); m.appendChild(pl);
+  pl.append(el("p","dzmeta",`${doneDays} de ${DAYS.length} dias concluídos · ${tasks} de ${TOTAL_TASKS} tarefas feitas`)); m.appendChild(pl);
 
   const mi=el("section","wcard"); mi.appendChild(headRow("Missões de hoje","VER TODAS",()=>go(16)));
   missionsToday().slice(0,4).forEach(ms=>mi.appendChild(missionRow(ms,false))); m.appendChild(mi);
