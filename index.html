@@ -407,11 +407,6 @@ main#main{min-width:0}
 .mrow.compact .mi{font-size:1.4rem}
 .gemtag{font-weight:800;font-size:.82rem;color:var(--muted);white-space:nowrap}
 .gemtag.ok{color:var(--lime)}
-.lrow{display:flex;align-items:center;gap:.9rem;padding:.5rem .6rem;border-radius:14px}
-.lrow.on{background:var(--teal-soft)}
-.lrow>div{display:flex;flex-direction:column}
-.shield{font-size:1.9rem}
-.bigshield{font-size:4rem}
 .hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:14px;margin-bottom:12px}
 .hubcard{position:relative;text-align:left;background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:20px;padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.3rem;text-decoration:none;color:var(--ink);min-height:130px;overflow:hidden}
 .hubcard:hover{border-color:var(--hc,var(--teal))}
@@ -607,7 +602,6 @@ const RAIL=[
   {id:"inicio",label:"Início",icon:"🏠",first:11},
   {id:"aprender",label:"Aprender",icon:"📚",first:13},
   {id:"praticar",label:"Praticar",icon:"🏋️",first:14},
-  {id:"ligas",label:"Ligas",icon:"🛡️",first:15},
   {id:"missoes",label:"Missões",icon:"🎯",first:16},
   {id:"loja",label:"Loja",icon:"🛍️",first:17},
   {id:"perfil",label:"Perfil",icon:"👤",first:18},
@@ -623,7 +617,6 @@ function groupOf(w){
   if(w===11) return "inicio";
   if(w===13||w<=4) return "aprender";
   if(w===14||[5,6,7,8,9,10].includes(w)) return "praticar";
-  if(w===15) return "ligas";
   if(w===16) return "missoes";
   if(w===17) return "loja";
   if(w===18||w===12) return "perfil";
@@ -676,7 +669,7 @@ const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2
 
 function renderMain(){
   const m=$("main"); m.innerHTML="";
-  const VIEWS={5:renderDictation,6:renderCards,7:renderQuiz,8:renderFala,9:renderAudio,10:renderStories,11:renderInicio,12:renderBadges,13:renderTrilha,14:renderPraticar,15:renderLigas,16:renderMissoes,17:renderLoja,18:renderPerfil,19:renderMais};
+  const VIEWS={5:renderDictation,6:renderCards,7:renderQuiz,8:renderFala,9:renderAudio,10:renderStories,11:renderInicio,12:renderBadges,13:renderTrilha,14:renderPraticar,16:renderMissoes,17:renderLoja,18:renderPerfil,19:renderMais};
   if(curWeek!==9) stopAudio();
   if(VIEWS[curWeek]){VIEWS[curWeek](m);return;}
   const W=WEEKS[curWeek]; const ti=todayIndex();
@@ -1231,7 +1224,7 @@ function addErrCard(item){
   state.custom.push({id,t:item.t,s:item.s||"",set:"Erros do ditado"});
 }
 
-// ===== Base do site: sequência, missões, ligas e loja =====
+// ===== Base do site: sequência, missões e loja =====
 function streakNow(){
   const st=state.streak||{count:0,last:-1};
   const alive=st.last===DAY()||st.last===DAY()-1||(st.last===DAY()-2&&(state.freezes??1)>0);
@@ -1243,8 +1236,6 @@ function currentDayIdx(){const i=DAYS.findIndex(d=>dayStatus(d)!=="done"); retur
 function planTasksToday(){const ti=todayIndex(); if(ti<0||ti>=30) return 0; const d=DAYS[ti]; return d.tasks.filter((_,k)=>state.done[key(d.n,k)]).length;}
 function dueCount(){const t=DAY(); let rev=0,nov=0; allCards().forEach(c=>{const cs0=cardState(c.id); if(cs0.reps>0){ if(cs0.due<=t) rev++; } else nov++;}); return {rev,nov};}
 function weekXp(){let x=0; for(let i=0;i<7;i++) x+=((state.xpLog||{})[DAY()-i]||0); return x;}
-const DIVS=[["Bronze",0,"#CD7F32"],["Prata",150,"#B8C2D6"],["Ouro",350,"#F4C430"],["Safira",600,"#4C8DFF"],["Rubi",900,"#FF4D6D"],["Diamante",1300,"#6FE3FF"]];
-function divIdx(x){let i=0; DIVS.forEach((d,k)=>{if(x>=d[1]) i=k;}); return i;}
 
 const MISSIONS=[
   {id:"xp",icon:"⚡",t:"Ganhe 50 XP",goal:GOAL_XP,val:()=>todayXp(),gems:10},
@@ -1310,10 +1301,6 @@ function renderRight(){
   const r=$("right"); if(!r) return; r.innerHTML="";
   const mi=el("section","wcard"); mi.appendChild(headRow("Missões do dia","VER TODAS",()=>go(16)));
   MISSIONS.slice(0,3).forEach(ms=>mi.appendChild(missionRow(ms,true))); r.appendChild(mi);
-  const di=divIdx(weekXp()), D=DIVS[di];
-  const lg=el("section","wcard"); lg.appendChild(headRow("Sua liga","VER LIGAS",()=>go(15)));
-  const row=el("div","lrow"); const sh=el("span","shield","🛡️"); sh.style.filter=`drop-shadow(0 0 8px ${D[2]})`;
-  row.append(sh); const tx=el("div"); tx.append(el("b",null,`Divisão ${D[0]}`),el("span","dzmeta",`${weekXp()} XP nesta semana`)); row.appendChild(tx); lg.appendChild(row); r.appendChild(lg);
   const gl=el("section","wcard center"); gl.appendChild(headRow("Meta do dia")); gl.appendChild(ringEl(todayXp(),GOAL_XP,"XP")); r.appendChild(gl);
 }
 
@@ -1398,22 +1385,6 @@ function renderPraticar(m){
     const a=el("button","hubcard slim"); a.append(el("span","hi",i),el("b",null,t),el("span","dzmeta",d)); a.onclick=fn; g2.appendChild(a);
   });
   m.appendChild(g2);
-}
-
-// ===== Ligas: divisões pessoais por XP semanal =====
-function renderLigas(m){
-  pageTitle(m,"Ligas","Sua divisão sobe conforme o XP dos últimos 7 dias. Por enquanto você compete com a sua própria meta.");
-  const x=weekXp(), di=divIdx(x), D=DIVS[di], next=DIVS[di+1];
-  const box=el("section","card-box");
-  const sh=el("div","bigshield","🛡️"); sh.style.filter=`drop-shadow(0 0 18px ${D[2]})`;
-  box.append(sh,el("h2",null,`Divisão ${D[0]}`),el("p","dzmeta",`${x} XP nos últimos 7 dias`));
-  if(next){ const bar=el("div","bar"), f=el("div","fill"); f.style.width=Math.round((x-D[1])/(next[1]-D[1])*100)+"%"; bar.appendChild(f); box.append(bar,el("p","dzmeta",`Faltam ${next[1]-x} XP para a divisão ${next[0]}.`)); }
-  else box.append(el("p","fb good","Você está na divisão mais alta!"));
-  m.appendChild(box);
-  const lad=el("section","wcard"); lad.appendChild(headRow("Todas as divisões"));
-  DIVS.forEach((d,i)=>{ const r=el("div","lrow"+(i===di?" on":"")); const s2=el("span","shield","🛡️"); s2.style.filter=`drop-shadow(0 0 6px ${d[2]})`; const t=el("div"); t.append(el("b",null,d[0]),el("span","dzmeta",d[1]+" XP por semana")); r.append(s2,t); lad.appendChild(r); });
-  m.appendChild(lad);
-  m.appendChild(el("p","dzmeta","Ligas com outras pessoas precisam de um servidor para comparar contas e ainda não existem aqui."));
 }
 
 // ===== Missões =====
