@@ -449,7 +449,14 @@ render(); setSync("Salvo neste navegador");
 // 2) Publicado no GitHub Pages: usa Firebase (login Google + Firestore).
 //    Cole a configuração do seu projeto Firebase abaixo (passo a passo no README).
 //    Enquanto estiver null, o progresso fica só no navegador.
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyATfGyuu2FT-9jvZLOdEg-8ESrWO8JNDLI",
+  authDomain: "hwlly-english.firebaseapp.com",
+  projectId: "hwlly-english",
+  storageBucket: "hwlly-english.firebasestorage.app",
+  messagingSenderId: "858571422952",
+  appId: "1:858571422952:web:f3347aab0c366c3c0d1d5d"
+};
 
 async function attachRef(doc){
   ref=doc;
