@@ -54,7 +54,7 @@ input[type=search]{width:100%;max-width:26rem;font:inherit;color:var(--ink);back
 <div class="wrap">
   <div class="toprow"><a class="back" href="index.html">← Voltar ao HWLLY</a><div data-langsw></div></div>
   <h1>Fontes em inglês para ler e ouvir</h1>
-  <p class="lead">Sites de notícias, tecnologia e yoga do mundo inteiro, escolhidos para treinar listening e leitura com sotaques e assuntos diferentes. Comece pelos de nível mais baixo e suba aos poucos.</p>
+  <p class="lead">Sites de notícias, tecnologia e cultura do mundo inteiro, escolhidos para treinar listening e leitura com sotaques e assuntos diferentes. Comece pelos de nível mais baixo e suba aos poucos.</p>
 
   <div class="tips">
     <div class="tip"><b>1. Escolha pelo nível</b><span>A2 e B1 têm textos curtos e fala mais lenta. B2 e C1 são feitos para falantes nativos.</span></div>
@@ -70,7 +70,7 @@ input[type=search]{width:100%;max-width:26rem;font:inherit;color:var(--ink);back
   <p class="note">Sites mudam de endereço e de oferta. Se algum link não abrir, procure o nome da fonte num buscador. Alguns conteúdos têm versão paga ou exigem cadastro.</p>
 </div>
 <script>
-const CATS={noticias:"📰 Notícias",mundo:"🌍 Inglês pelo mundo",tech:"💻 Tecnologia",yoga:"🧘 Yoga e bem-estar"};
+const CATS={noticias:"📰 Notícias",mundo:"🌍 Inglês pelo mundo",tech:"💻 Tecnologia",cultura:"🎬 Cultura e esportes"};
 // [categoria, nome, país/sotaque, nível, descrição, como usar, link]
 const FONTES=[
  ["noticias","BBC Learning English","Reino Unido","A2–B2","Lições, notícias e podcasts feitos para quem aprende inglês.","Faça o 6 Minute English: ouça uma vez, depois leia a transcrição.","https://www.bbc.co.uk/learningenglish"],
@@ -101,14 +101,14 @@ const FONTES=[
  ["tech","BBC Innovation","Reino Unido","B2","Inovação, ciência e tecnologia.","Veja os vídeos e depois leia a matéria.","https://www.bbc.com/innovation"],
  ["tech","Techmeme","Estados Unidos","B2–C1","Resumo das principais notícias de tecnologia do dia.","Leia só as manchetes e tente adivinhar o assunto.","https://techmeme.com"],
  ["tech","Hacker News","Internacional","C1","Discussões de programadores e empreendedores.","Leia os comentários para ver inglês informal e técnico.","https://news.ycombinator.com"],
- ["yoga","Yoga With Adriene","Estados Unidos","A2–B1","Aulas gratuitas no YouTube, com voz calma e instruções claras.","Faça a aula acompanhando as instruções em inglês, sem legenda.","https://yogawithadriene.com"],
- ["yoga","DoYogaWithMe","Canadá","A2–B1","Aulas de yoga e meditação com professores variados.","Escolha aulas de nível iniciante e repita as instruções em voz baixa.","https://www.doyogawithme.com"],
- ["yoga","Yoga Journal","Estados Unidos","B1–B2","Artigos sobre posturas, respiração e estilo de vida.","Leia sobre uma postura por dia e aprenda os nomes em inglês.","https://www.yogajournal.com"],
- ["yoga","Yoga International","Estados Unidos","B1–B2","Artigos e práticas de yoga e meditação.","Boa para vocabulário de corpo e movimento.","https://yogainternational.com"],
- ["yoga","Insight Timer","Internacional","A2–B2","Meditações guiadas por professores do mundo todo.","Escolha uma meditação curta e ouça sem ver o texto.","https://insighttimer.com"],
- ["yoga","Headspace","Internacional","B1","Meditação, sono e bem-estar.","Leia o blog e ouça uma sessão introdutória.","https://www.headspace.com"],
- ["yoga","Calm","Internacional","B1","Meditação e histórias para dormir.","Ótimo para ouvir inglês em voz suave antes de dormir.","https://www.calm.com"],
- ["yoga","mindbodygreen","Estados Unidos","B1–B2","Saúde, alimentação e bem-estar.","Leia um artigo curto e anote 3 palavras novas.","https://www.mindbodygreen.com"]
+ ["cultura","Variety","Estados Unidos","B2","Notícias de cinema, TV e entretenimento.","Leia uma crítica e liste os adjetivos usados para elogiar ou criticar.","https://variety.com"],
+ ["cultura","Rolling Stone","Estados Unidos","B2","Música, filmes e cultura pop, com entrevistas longas.","Leia uma entrevista e destaque 5 expressões informais.","https://www.rollingstone.com"],
+ ["cultura","Billboard","Estados Unidos","B2","Notícias e listas da indústria da música.","Leia as manchetes da semana e tente adivinhar o assunto antes de abrir.","https://www.billboard.com"],
+ ["cultura","Pitchfork","Estados Unidos","B2–C1","Resenhas de álbuns e artigos sobre música.","Leia uma resenha curta e anote 3 palavras novas.","https://pitchfork.com"],
+ ["cultura","Empire","Reino Unido","B2","Cinema britânico: notícias, entrevistas e críticas.","Compare o inglês britânico com o das fontes americanas.","https://www.empireonline.com"],
+ ["cultura","The Guardian Culture","Reino Unido","B2–C1","Arte, livros, música e teatro.","Leia uma resenha por dia e anote as expressões de opinião.","https://www.theguardian.com/culture"],
+ ["cultura","BBC Sport","Reino Unido","B1–B2","Notícias e resultados de esportes, com vídeos.","Leia o resumo de uma partida e ouça o vídeo em seguida.","https://www.bbc.com/sport"],
+ ["cultura","ESPN","Estados Unidos","B2","Esportes americanos e internacionais.","Ouça um vídeo curto e conte o resultado em voz alta.","https://www.espn.com"]
 ];
 const st={cat:"todas",lv:"todos",q:""};
 const $=id=>document.getElementById(id);
