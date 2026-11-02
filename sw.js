@@ -1,12 +1,12 @@
 // Service worker do HWLLY | ENGLISH: deixa o app abrir sem internet depois da primeira visita.
-// A página principal usa rede primeiro, para sempre pegar a versão mais nova quando há conexão.
-const CACHE = "hwlly-v10";
+// Com internet, sempre busca a versão mais nova (sem usar cópia velha do navegador); sem internet, usa a cópia guardada.
+const CACHE = "hwlly-v11";
 const SHELL = ["./", "./index.html", "./novidades.html", "./manifest.json",
   "./recursos.html", "./fontes.html", "./data/i18n.js", "./data/deck.js", "./data/stories.js", "./data/frases_pt.js", "./data/features.json",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
+  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(new Request(u, { cache: "reload" }))))));
   self.skipWaiting();
 });
 
@@ -23,26 +23,12 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // fontes e Firebase seguem direto pela rede
-
-  const isPage = req.mode === "navigate" || req.destination === "document";
-  if (isPage) {
-    e.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match("./index.html")))
-    );
-    return;
-  }
-
   e.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req).then((res) => {
-      const copy = res.clone();
-      caches.open(CACHE).then((c) => c.put(req, copy));
-      return res;
-    }))
+    fetch(new Request(req.url, { cache: "no-cache", credentials: "same-origin" }))
+      .then((res) => {
+        if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        return res;
+      })
+      .catch(() => caches.match(req).then((r) => r || (req.mode === "navigate" ? caches.match("./index.html") : undefined)))
   );
 });
