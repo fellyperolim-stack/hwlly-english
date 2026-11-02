@@ -106,6 +106,13 @@ nav button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-co
 #tabs .sub-tabs button{font-size:.9rem;padding:.35rem .75rem}
 .who{display:flex;align-items:center;gap:.5rem;font-weight:700;color:var(--ink);font-size:.95rem;flex-basis:100%}
 .who img{width:1.9rem;height:1.9rem;border-radius:50%;background:var(--line);object-fit:cover}
+.cardhead{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.4rem;font-weight:700;margin:.6rem 0 0}
+.card-box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:1.2rem;margin-top:.6rem;display:flex;flex-direction:column;gap:.8rem;align-items:flex-start}
+.card-box button{max-width:100%}
+.cardfront{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.5rem;font-weight:800;margin:0;line-height:1.3}
+.cardback{font-size:1.2rem;margin:0;color:var(--teal);font-weight:700}
+.rate{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;width:100%}
+.rate button{padding:.7rem .5rem;font-size:.95rem}
 #gate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg);z-index:10}
 body.locked #gate{display:flex}
 body.locked .wrap{display:none}
@@ -316,20 +323,20 @@ function renderWave(){
 }
 
 // Navegação agrupada: primeiro nível (Plano, Ditado, Novidades) e, dentro de Plano, as semanas.
-const GROUPS=[{id:"plano",label:"📅 Plano",first:0},{id:"ditado",label:"🎧 Ditado",first:5},{id:"novidades",label:"🔎 Novidades",href:"novidades.html"}];
+const GROUPS=[{id:"plano",label:"📅 Plano",first:0},{id:"ditado",label:"🎧 Ditado",first:5},{id:"cards",label:"🃏 Cards",first:6},{id:"novidades",label:"🔎 Novidades",href:"novidades.html"},{id:"recursos",label:"🧭 Recursos",href:"recursos.html"}];
 const PLANO_ITEMS=["Semana 1","Semana 2","Semana 3","Semana 4","Final"];
 
 function renderTabs(){
   const t=$("tabs"); t.innerHTML="";
   const top=document.createElement("div"); top.className="grp";
-  const inPlano=curWeek<5, inDitado=curWeek===5;
+  const inPlano=curWeek<5, inDitado=curWeek===5, inCards=curWeek===6;
   GROUPS.forEach(g=>{
     const b=document.createElement("button"); b.textContent=g.label; b.setAttribute("role","tab");
     if(g.href){ b.onclick=()=>{location.href=g.href;}; }
     else {
-      const active=(g.id==="plano"&&inPlano)||(g.id==="ditado"&&inDitado);
+      const active=(g.id==="plano"&&inPlano)||(g.id==="ditado"&&inDitado)||(g.id==="cards"&&inCards);
       b.setAttribute("aria-selected",active);
-      b.onclick=()=>{curWeek=g.first; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
+      b.onclick=()=>{curWeek=g.first; if(g.id==="cards") cs={queue:null,i:0,shown:false,done:0}; render(); window.scrollTo({top:$("tabs").offsetTop-10,behavior:"smooth"});};
     }
     top.appendChild(b);
   });
@@ -348,7 +355,7 @@ function renderTabs(){
 const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
 
 function renderMain(){
-  const m=$("main"); m.innerHTML=""; if(curWeek===5){renderDictation(m);return;} const W=WEEKS[curWeek]; const ti=todayIndex();
+  const m=$("main"); m.innerHTML=""; if(curWeek===5){renderDictation(m);return;} if(curWeek===6){renderCards(m);return;} const W=WEEKS[curWeek]; const ti=todayIndex();
   const h=document.createElement("div"); h.className="weekhead";
   h.innerHTML=`<h2></h2><p></p>`; h.querySelector("h2").textContent=W.title; h.querySelector("p").textContent=W.goal; m.appendChild(h);
   W.days.forEach(d=>{
@@ -520,6 +527,71 @@ function renderDictation(m){
   SETS.forEach((st,i)=>{const a=setAvg(i); ov.appendChild(el("p","dzmeta",`${st.name}: `+(a?`${a.avg}% de média em ${a.n} de ${st.items.length} frases`:"ainda não começou")));});
   ov.appendChild(el("p","hint","Dica: ouça primeiro em velocidade normal. Só use a versão devagar depois de duas tentativas. Quando acertar acima de 90%, troque o sotaque."));
   m.appendChild(ov);
+}
+
+// ---- Flashcards com repetição espaçada (SM-2 simplificado) e gamificação ----
+// Cada frase do ditado vira um card. Errei/Difícil/Bom/Fácil define quando ele volta.
+let cs={queue:null,i:0,shown:false,done:0};
+const DAY=()=>Math.floor(Date.now()/864e5);
+function allCards(){const out=[]; SETS.forEach((st,si)=>st.items.forEach((it,i)=>out.push({id:`c${si}i${i}`,front:it.s,back:it.t,set:st.name}))); return out;}
+function cardById(id){return allCards().find(c=>c.id===id);}
+function cardState(id){return (state.cards||{})[id]||{ease:2.5,ivl:0,reps:0,due:0};}
+function dueCards(limit){const today=DAY(); return allCards().filter(c=>cardState(c.id).due<=today).sort((a,b)=>cardState(a.id).due-cardState(b.id).due).slice(0,limit);}
+function nextState(c,q){
+  let {ease,ivl,reps}=c;
+  if(q===0){ivl=1; ease=Math.max(1.3,ease-0.2); reps=0;}
+  else{
+    reps++;
+    if(q===1){ease=Math.max(1.3,ease-0.15); ivl=Math.max(1,Math.round(ivl*1.2));}
+    else if(q===2){ivl=ivl<=1?3:Math.round(ivl*ease);}
+    else{ease+=0.15; ivl=ivl<=1?4:Math.round(ivl*ease*1.3);}
+  }
+  return {ease,ivl,reps,due:DAY()+ivl};
+}
+function touchStreak(){const t=DAY(); const s=state.streak||{last:-1,count:0}; if(s.last===t) return; s.count=(s.last===t-1)?s.count+1:1; s.last=t; state.streak=s;}
+function rateCard(id,q){
+  state.cards=state.cards||{};
+  state.cards[id]=nextState(cardState(id),q);
+  state.xp=(state.xp||0)+(q===0?2:10);
+  touchStreak(); persist();
+}
+function previewIvl(id,q){const n=nextState(cardState(id),q); return n.ivl<=1?"1 dia":`${n.ivl} dias`;}
+function sayEn(text){try{speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; speechSynthesis.speak(u);}catch(e){}}
+
+function renderCards(m){
+  if(!cs.queue){cs={queue:dueCards(10).map(c=>c.id),i:0,shown:false,done:0};}
+  const st=state.streak||{count:0,last:-1};
+  const alive=st.last===DAY()||st.last===DAY()-1;
+  const hdr=el("div","cardhead");
+  hdr.append(el("span",null,`🔥 ${alive?st.count:0} ${(alive?st.count:0)===1?"dia":"dias"} seguidos`), el("span",null,`⭐ ${state.xp||0} XP`));
+  m.appendChild(hdr);
+  const box=el("section","card-box");
+  if(cs.i>=cs.queue.length){
+    box.append(el("h2",null,"Sessão concluída!"), el("p","dzmeta",`Você revisou ${cs.done} ${cs.done===1?"card":"cards"} nesta sessão.`));
+    const again=el("button","primary","Estudar mais 10");
+    again.onclick=()=>{cs={queue:null,i:0,shown:false,done:0}; renderMain();};
+    box.appendChild(again);
+  } else {
+    const c=cardById(cs.queue[cs.i]);
+    box.appendChild(el("p","dzmeta",`Card ${cs.i+1} de ${cs.queue.length} · ${c.set}`));
+    box.appendChild(el("p","cardfront",c.front));
+    const play=el("button","ghost","🔊 Ouvir a frase"); play.onclick=()=>sayEn(c.back);
+    box.appendChild(play);
+    if(!cs.shown){
+      const show=el("button","primary","Mostrar frase"); show.onclick=()=>{cs.shown=true; renderMain();};
+      box.appendChild(show);
+    } else {
+      box.appendChild(el("p","cardback",c.back));
+      const row=el("div","rate");
+      [["Errei",0],["Difícil",1],["Bom",2],["Fácil",3]].forEach(([l,q])=>{
+        const b=el("button", q===0?"ghost":"primary", `${l} · ${previewIvl(c.id,q)}`);
+        b.onclick=()=>{rateCard(c.id,q); cs.done++; cs.i++; cs.shown=false; renderMain();};
+        row.appendChild(b);
+      });
+      box.appendChild(row);
+    }
+  }
+  m.appendChild(box);
 }
 
 function render(){renderWave(); renderTabs(); renderMain();}
